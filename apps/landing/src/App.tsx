@@ -8,7 +8,7 @@ import {
   type InternalState,
   type LayoutSnapshot,
 } from '@fluid-loading/react';
-import './playground.css';
+import './landing.css';
 
 type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
 type ContentVariation = 'short' | 'medium' | 'long' | 'error';
@@ -274,23 +274,147 @@ export function App(): React.JSX.Element {
     setIsBenchmarking(false);
   };
 
+  const [copiedInstall, setCopiedInstall] = useState(false);
+  const [copiedQuickstart, setCopiedQuickstart] = useState(false);
+
+  const copyInstallCommand = (cmd = 'npm install @fluid-loading/react') => {
+    navigator.clipboard.writeText(cmd).then(() => {
+      setCopiedInstall(true);
+      window.setTimeout(() => setCopiedInstall(false), 2000);
+    });
+  };
+
+  const QUICKSTART_CODE = `import { FluidLoading } from '@fluid-loading/react';
+
+export function UserCard({ user, loading, error }) {
+  return (
+    <FluidLoading
+      loading={loading}
+      error={error}
+      estimatedHeight={320}
+    >
+      <article className="user-card">
+        <img
+          src={user?.avatar}
+          alt={user?.name}
+          data-fluid-loading-type="circle"
+        />
+        <h2>{user?.name}</h2>
+        <p>{user?.bio}</p>
+        <button data-fluid-loading-ignore>Contact</button>
+      </article>
+    </FluidLoading>
+  );
+}`;
+
+  const copyQuickstartCode = () => {
+    navigator.clipboard.writeText(QUICKSTART_CODE).then(() => {
+      setCopiedQuickstart(true);
+      window.setTimeout(() => setCopiedQuickstart(false), 2000);
+    });
+  };
+
   const isError = variation === 'error';
 
   return (
-    <div className="playground-container">
-      <header className="header">
-        <div className="header-brand">
-          <div className="header-logo-wrapper">
-            <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+    <>
+      <nav className="navbar">
+        <div className="navbar-container">
+          <div className="header-brand">
+            <div className="header-logo-wrapper">
+              <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+            </div>
+            <h1>fluid-loading</h1>
+            <span className="version-pill">v0.1.0</span>
           </div>
-          <h1>fluid-loading</h1>
-        </div>
-        <div className="header-badges">
-          <span className="version-pill">v0.1.0</span>
-        </div>
-      </header>
 
-      <div className="main-layout">
+          <div className="nav-links">
+            <a href="#demo" className="nav-link">Interactive Demo</a>
+            <a href="#features" className="nav-link">Features</a>
+            <a href="#benchmark" className="nav-link">Benchmark</a>
+            <a href="#quickstart" className="nav-link">Quick Start</a>
+          </div>
+
+          <div className="nav-actions">
+            <button
+              type="button"
+              className="nav-install-pill"
+              onClick={() => copyInstallCommand('npm install @fluid-loading/react')}
+              title="Copy install command"
+            >
+              <code>npm i @fluid-loading/react</code>
+              <span>{copiedInstall ? '✓ Copied' : 'Copy'}</span>
+            </button>
+            <a
+              href="https://github.com/rgdlr/fluid-loading"
+              target="_blank"
+              rel="noreferrer"
+              className="nav-github-btn"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div className="playground-container">
+        <section className="hero-section">
+          <div className="hero-badge">
+            <span>✨ Layout-Aware Transition Engine for React</span>
+          </div>
+          <h1 className="hero-title">
+            Stop flashing generic skeletons.<br />
+            <span className="hero-gradient-text">Morph smoothly into real layouts.</span>
+          </h1>
+          <p className="hero-subtitle">
+            fluid-loading measures real DOM geometry in-flight, smoothly interpolates container dimensions,
+            and reveals your content with zero visual jarring and 0.00 Cumulative Layout Shift.
+          </p>
+
+          <div className="hero-ctas">
+            <a href="#demo" className="hero-cta-btn">
+              Explore Interactive Demo ↓
+            </a>
+            <button
+              type="button"
+              className="hero-terminal-btn"
+              onClick={() => copyInstallCommand('npm install @fluid-loading/react')}
+            >
+              <code>npm install @fluid-loading/react</code>
+              <span>{copiedInstall ? '✓ Copied' : 'Copy'}</span>
+            </button>
+          </div>
+
+          <div className="hero-highlights-strip">
+            <div className="highlight-item">
+              <span className="highlight-value">0.00</span>
+              <span className="highlight-label">Cumulative Layout Shift</span>
+            </div>
+            <div className="highlight-item">
+              <span className="highlight-value">&lt; 1ms</span>
+              <span className="highlight-label">Measurement Overhead</span>
+            </div>
+            <div className="highlight-item">
+              <span className="highlight-value">Zero-Config</span>
+              <span className="highlight-label">Styles Bundled in React</span>
+            </div>
+            <div className="highlight-item">
+              <span className="highlight-value">100%</span>
+              <span className="highlight-label">Accessible &amp; Reduced-Motion</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="demo" className="demo-section">
+          <div className="section-header">
+            <span className="section-tag">Interactive Sandbox</span>
+            <h2 className="section-title">Experience the Transition Live</h2>
+            <p className="section-desc">
+              Test in-flight geometry morphing, skeleton detection, and custom theme tokens in real time.
+            </p>
+          </div>
+
+          <div className="main-layout">
         <aside className="sidebar">
           <div className="actions-row">
             <button className="trigger-button" onClick={triggerLoad}>
@@ -701,93 +825,180 @@ export function App(): React.JSX.Element {
             </div>
           </div>
         </main>
-      </div>
+        </div>
+        </section>
 
-      <section className="bento-grid">
-        <div className="bento-card">
-          <div className="bento-card-header">
-            <div className="bento-card-title-group">
-              <span className="bento-tag">Inspection</span>
-              <h2>Precise Skeleton Bones Detected</h2>
-            </div>
-            {lastSnapshot && (
-              <span className="bento-count-badge">{lastSnapshot.bones.length} bones</span>
-            )}
+        <section id="features" className="features-section">
+          <div className="section-header">
+            <span className="section-tag">Capabilities</span>
+            <h2 className="section-title">Architecture &amp; Real-time Verification</h2>
+            <p className="section-desc">
+              Inspect generated structural bone primitives, run in-browser layout benchmarks, and verify 0.00 CLS.
+            </p>
           </div>
-          {lastSnapshot && lastSnapshot.bones.length > 0 ? (
-            <>
-              <p className="bento-subtitle">
-                Snapshot: <strong>{lastSnapshot.width}×{lastSnapshot.height}px</strong> &bull;{' '}
-                {lastSnapshot.bones.filter((b) => b.type === 'text').length} text,{' '}
-                {lastSnapshot.bones.filter((b) => b.type === 'rect').length} rect,{' '}
-                {lastSnapshot.bones.filter((b) => b.type === 'circle').length} circle
-              </p>
-              <div className="bones-pill-list">
-                {lastSnapshot.bones.map((b, i) => (
-                  <span key={i} className={`bone-pill ${b.type}`}>
-                    {b.type} {b.width}×{b.height} @ ({b.x},{b.y})
-                  </span>
-                ))}
+
+          <div className="bento-grid">
+            <div className="bento-card">
+              <div className="bento-card-header">
+                <div className="bento-card-title-group">
+                  <span className="bento-tag">Inspection</span>
+                  <h2>Precise Skeleton Bones Detected</h2>
+                </div>
+                {lastSnapshot && (
+                  <span className="bento-count-badge">{lastSnapshot.bones.length} bones</span>
+                )}
               </div>
-            </>
-          ) : (
-            <div className="bento-empty-state">
-              <span>Waiting for initial render snapshot...</span>
+              {lastSnapshot && lastSnapshot.bones.length > 0 ? (
+                <>
+                  <p className="bento-subtitle">
+                    Snapshot: <strong>{lastSnapshot.width}×{lastSnapshot.height}px</strong> &bull;{' '}
+                    {lastSnapshot.bones.filter((b) => b.type === 'text').length} text,{' '}
+                    {lastSnapshot.bones.filter((b) => b.type === 'rect').length} rect,{' '}
+                    {lastSnapshot.bones.filter((b) => b.type === 'circle').length} circle
+                  </p>
+                  <div className="bones-pill-list">
+                    {lastSnapshot.bones.map((b, i) => (
+                      <span key={i} className={`bone-pill ${b.type}`}>
+                        {b.type} {b.width}×{b.height} @ ({b.x},{b.y})
+                      </span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="bento-empty-state">
+                  <span>Waiting for initial render snapshot...</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="bento-card">
-          <div className="bento-card-header">
-            <div className="bento-card-title-group">
-              <span className="bento-tag">Performance</span>
-              <h2>DOM Scalability Benchmark</h2>
+            <div id="benchmark" className="bento-card">
+              <div className="bento-card-header">
+                <div className="bento-card-title-group">
+                  <span className="bento-tag">Performance</span>
+                  <h2>DOM Scalability Benchmark</h2>
+                </div>
+                <button
+                  className="content-card-action bento-action-button"
+                  onClick={runBenchmark}
+                  disabled={isBenchmarking}
+                >
+                  {isBenchmarking ? 'Running...' : 'Run Benchmark'}
+                </button>
+              </div>
+              <p className="bento-subtitle">
+                Recursive element scanning, snapshot serialization, and skeleton generation.
+              </p>
+
+              {benchmarkResults.length > 0 ? (
+                <div className="bento-table-wrapper">
+                  <table className="benchmark-table">
+                    <thead>
+                      <tr>
+                        <th>DOM Nodes</th>
+                        <th>Scan Time</th>
+                        <th>Bones</th>
+                        <th>Snapshot Size</th>
+                        <th>Skeleton Build</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {benchmarkResults.map((res) => (
+                        <tr key={res.nodeCount}>
+                          <td>{res.nodeCount} nodes</td>
+                          <td>{res.scanTimeMs} ms</td>
+                          <td>{res.boneCount}</td>
+                          <td>{res.snapshotBytes} B</td>
+                          <td>{res.skeletonDomTimeMs} ms</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="bento-empty-state">
+                  <span>Click "Run Benchmark" to test throughput across 10, 100, 500, and 1,000 DOM nodes.</span>
+                </div>
+              )}
             </div>
-            <button
-              className="content-card-action bento-action-button"
-              onClick={runBenchmark}
-              disabled={isBenchmarking}
-            >
-              {isBenchmarking ? 'Running...' : 'Run Benchmark'}
-            </button>
           </div>
-          <p className="bento-subtitle">
-            Recursive element scanning, snapshot serialization, and skeleton generation.
-          </p>
 
-          {benchmarkResults.length > 0 ? (
-            <div className="bento-table-wrapper">
-              <table className="benchmark-table">
-                <thead>
-                  <tr>
-                    <th>DOM Nodes</th>
-                    <th>Scan Time</th>
-                    <th>Bones</th>
-                    <th>Snapshot Size</th>
-                    <th>Skeleton Build</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {benchmarkResults.map((res) => (
-                    <tr key={res.nodeCount}>
-                      <td>{res.nodeCount} nodes</td>
-                      <td>{res.scanTimeMs} ms</td>
-                      <td>{res.boneCount}</td>
-                      <td>{res.snapshotBytes} B</td>
-                      <td>{res.skeletonDomTimeMs} ms</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="features-trio">
+            <div className="feature-mini-card">
+              <span className="feature-mini-icon">🛡️</span>
+              <h3 className="feature-mini-title">Zero Layout Shifts (0.00 CLS)</h3>
+              <p className="feature-mini-desc">
+                By measuring actual rendered DOM geometry before reveal and animating container dimensions, content never abruptly shifts existing layout elements.
+              </p>
             </div>
-          ) : (
-            <div className="bento-empty-state">
-              <span>Click "Run Benchmark" to test throughput across 10, 100, 500, and 1,000 DOM nodes.</span>
+
+            <div className="feature-mini-card">
+              <span className="feature-mini-icon">♿</span>
+              <h3 className="feature-mini-title">Accessible by Default</h3>
+              <p className="feature-mini-desc">
+                Automatically manages aria-busy, marks skeletons with aria-hidden, and detects @media (prefers-reduced-motion) to transition instantly without animation.
+              </p>
             </div>
-          )}
-        </div>
-      </section>
-    </div>
+
+            <div className="feature-mini-card">
+              <span className="feature-mini-icon">🎨</span>
+              <h3 className="feature-mini-title">Zero CSS Dependencies</h3>
+              <p className="feature-mini-desc">
+                Styles are bundled directly into @fluid-loading/react with no extra CSS imports required. Easily theme via CSS custom properties (--fluid-loading-*).
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="quickstart" className="quickstart-section">
+          <div className="section-header">
+            <span className="section-tag">Quick Start</span>
+            <h2 className="section-title">Integrate in Minutes</h2>
+            <p className="section-desc">
+              Install the React package and wrap your component. Zero manual CSS setup or placeholder drawings needed.
+            </p>
+          </div>
+
+          <div className="quickstart-card">
+            <div className="quickstart-header">
+              <span className="quickstart-title">UserCard.tsx</span>
+              <button
+                type="button"
+                className="copy-css-btn"
+                onClick={copyQuickstartCode}
+              >
+                {copiedQuickstart ? '✓ Copied!' : 'Copy Code'}
+              </button>
+            </div>
+            <pre className="quickstart-pre">{QUICKSTART_CODE}</pre>
+          </div>
+        </section>
+
+        <footer className="landing-footer">
+          <div className="footer-brand">
+            <div className="header-logo-wrapper" style={{ width: 32, height: 32 }}>
+              <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+            </div>
+            <h2>fluid-loading</h2>
+          </div>
+          <p className="footer-text">
+            A layout-aware skeleton and transition engine for React and the DOM.
+          </p>
+          <div className="footer-links">
+            <a href="#demo" className="footer-link">Playground</a>
+            <a href="#features" className="footer-link">Features</a>
+            <a href="#quickstart" className="footer-link">Quick Start</a>
+            <a
+              href="https://github.com/rgdlr/fluid-loading"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-link"
+            >
+              GitHub
+            </a>
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }
 

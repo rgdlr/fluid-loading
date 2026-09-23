@@ -2,7 +2,7 @@
 
 A layout-aware loading transition engine for React and the DOM.
 
-![fluid loading banner](./playground/public/banner.jpg)
+![fluid loading banner](./apps/landing/public/banner.jpg)
 
 Instead of abrupt jumps between generic placeholders and final content, Fluid Loading measures the real DOM in-flight, smoothly morphs the container geometry, displays an accurate skeleton overlay, and seamlessly reveals the final layout without layout shifts.
 
