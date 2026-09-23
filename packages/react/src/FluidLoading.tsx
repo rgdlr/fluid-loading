@@ -7,20 +7,19 @@ import React, {
 } from 'react';
 import {
   DEFAULTS,
-  FluidStateMachine,
+  FluidLoadingStateMachine,
   isReducedMotionPreferred,
   measureElement,
   resolveTiming,
-  type FluidState,
   type InternalState,
   type LayoutSnapshot,
 } from '@fluid-loading/core';
-import type { FluidProps } from './types.js';
+import type { FluidLoadingProps } from './types.js';
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-export function Fluid({
+export function FluidLoading({
   loading,
   error,
   estimatedHeight = DEFAULTS.estimatedHeight,
@@ -36,11 +35,11 @@ export function Fluid({
   onStateChange,
   onInternalStateChange,
   onSnapshot,
-}: FluidProps): React.JSX.Element {
+}: FluidLoadingProps): React.JSX.Element {
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const stateMachineRef = useRef<FluidStateMachine>(
-    new FluidStateMachine(loading ? 'loading' : error ? 'error' : 'ready')
+  const stateMachineRef = useRef<FluidLoadingStateMachine>(
+    new FluidLoadingStateMachine(loading ? 'loading' : error ? 'error' : 'ready')
   );
 
   const [internalState, setInternalState] = useState<InternalState>(() =>
@@ -221,13 +220,13 @@ export function Fluid({
     width: currentWidth,
     overflow: isReady ? (style?.overflow ?? 'visible') : 'hidden',
     transition: isReady ? 'none' : undefined,
-    ['--fluid-duration' as string]: `${timing.duration}ms`,
-    ['--fluid-reveal-duration' as string]: `${timing.revealDuration}ms`,
+    ['--fluid-loading-duration' as string]: `${timing.duration}ms`,
+    ['--fluid-loading-reveal-duration' as string]: `${timing.revealDuration}ms`,
   };
 
   const rootClass = [
-    'fluid-root',
-    isMorphing ? 'fluid-morphing' : '',
+    'fluid-loading-root',
+    isMorphing ? 'fluid-loading-morphing' : '',
     className,
   ]
     .filter(Boolean)
@@ -248,7 +247,7 @@ export function Fluid({
             errorFallback
           )
         ) : (
-          <div className="fluid-error-container">
+          <div className="fluid-loading-error-container">
             <p>Failed to load content</p>
           </div>
         )
@@ -256,14 +255,14 @@ export function Fluid({
 
       {!isReady && !isError && (
         <div
-          className="fluid-skeleton"
+          className="fluid-loading-skeleton"
           style={{
             opacity: isSkeletonFading ? 0 : 1,
           }}
           aria-hidden="true"
         >
           <div
-            className="fluid-skeleton fluid-estimated"
+            className="fluid-loading-skeleton fluid-loading-estimated"
             style={{
               position: 'absolute',
               inset: 0,
@@ -272,12 +271,12 @@ export function Fluid({
               pointerEvents: 'none',
             }}
           >
-            {!reducedMotion && <div className="fluid-shimmer" />}
+            {!reducedMotion && <div className="fluid-loading-shimmer" />}
           </div>
 
           {hasBones && (
             <div
-              className="fluid-bones-layer"
+              className="fluid-loading-bones-layer"
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -286,7 +285,7 @@ export function Fluid({
               {snapshot!.bones.map((bone, index) => (
                 <div
                   key={index}
-                  className={`fluid-bone fluid-bone-${bone.type}`}
+                  className={`fluid-loading-bone fluid-loading-bone-${bone.type}`}
                   style={{
                     left: `${bone.x}px`,
                     top: `${bone.y}px`,
@@ -299,7 +298,7 @@ export function Fluid({
                   }}
                 />
               ))}
-              {!reducedMotion && <div className="fluid-shimmer" />}
+              {!reducedMotion && <div className="fluid-loading-shimmer" />}
             </div>
           )}
 
@@ -311,12 +310,12 @@ export function Fluid({
         <div
           ref={contentRef}
           className={[
-            'fluid-content',
-            effectiveState === 'measuring' ? 'fluid-measuring' : '',
+            'fluid-loading-content',
+            effectiveState === 'measuring' ? 'fluid-loading-measuring' : '',
             effectiveState === 'morphing' || effectiveState === 'precise-skeleton'
-              ? 'fluid-hidden'
+              ? 'fluid-loading-hidden'
               : '',
-            isRevealing || isReady ? 'fluid-visible' : '',
+            isRevealing || isReady ? 'fluid-loading-visible' : '',
           ]
             .filter(Boolean)
             .join(' ')}

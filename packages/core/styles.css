@@ -1,0 +1,156 @@
+:root {
+  --fluid-loading-bone-bg: #cbd5e1;
+  --fluid-loading-surface-bg: #ffffff;
+  --fluid-loading-shimmer-color: rgba(251, 191, 36, 0.25);
+  --fluid-loading-radius: 12px;
+  --fluid-loading-text-radius: 5px;
+  --fluid-loading-rect-radius: 8px;
+  --fluid-loading-duration: 300ms;
+  --fluid-loading-reveal-duration: 150ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fluid-loading-bone-bg: #353d4f;
+    --fluid-loading-surface-bg: #1c202b;
+    --fluid-loading-shimmer-color: rgba(251, 191, 36, 0.16);
+  }
+}
+
+.fluid-loading-root {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: height var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1),
+              width var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1);
+  will-change: height, width;
+}
+
+.fluid-loading-skeleton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity var(--fluid-loading-reveal-duration) ease-in-out;
+  box-sizing: border-box;
+  background-color: var(--fluid-loading-surface-bg);
+  border-radius: inherit;
+  z-index: 2;
+}
+
+.fluid-loading-skeleton.fluid-loading-estimated {
+  background-color: var(--fluid-loading-bone-bg);
+  width: 100%;
+  height: 100%;
+}
+
+.fluid-loading-bones-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.fluid-loading-content {
+  box-sizing: border-box;
+  transition: opacity var(--fluid-loading-reveal-duration) ease-in-out;
+}
+
+.fluid-loading-content.fluid-loading-measuring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.fluid-loading-content.fluid-loading-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fluid-loading-content.fluid-loading-visible {
+  opacity: 1;
+}
+
+.fluid-loading-bone {
+  position: absolute;
+  background-color: var(--fluid-loading-bone-bg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.fluid-loading-bone-text {
+  border-radius: var(--fluid-loading-text-radius);
+}
+
+.fluid-loading-bone-rect {
+  border-radius: var(--fluid-loading-rect-radius);
+}
+
+.fluid-loading-bone-circle {
+  border-radius: 9999px;
+}
+
+.fluid-loading-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--fluid-loading-shimmer-color) 50%,
+    transparent 100%
+  );
+  animation: fluid-loading-shimmer-anim 1.5s infinite;
+}
+
+@keyframes fluid-loading-shimmer-anim {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.fluid-loading-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: var(--fluid-loading-radius);
+  background-color: rgba(239, 68, 68, 0.05);
+  border: 1px dashed rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.fluid-loading-error-container p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fluid-loading-root,
+  .fluid-loading-skeleton,
+  .fluid-loading-content {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .fluid-loading-shimmer {
+    display: none !important;
+  }
+}

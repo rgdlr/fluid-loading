@@ -15,7 +15,7 @@ export interface LayoutSnapshot {
   bones: Bone[];
 }
 
-export type FluidState = 'loading' | 'transitioning' | 'ready' | 'error';
+export type FluidLoadingState = 'loading' | 'transitioning' | 'ready' | 'error';
 
 export type InternalState =
   | 'loading'

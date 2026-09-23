@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Fluid } from '@fluid-loading/react';
+import { FluidLoading } from '@fluid-loading/react';
 import {
   measureElement,
   serializeSnapshot,
   createSkeletonElement,
-  type FluidState,
+  type FluidLoadingState,
   type InternalState,
   type LayoutSnapshot,
 } from '@fluid-loading/core';
-import '@fluid-loading/styles';
+import '@fluid-loading/core/styles.css';
 import './playground.css';
 
 type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
@@ -34,7 +34,7 @@ export function App(): React.JSX.Element {
   const [minimumSkeletonDuration, setMinimumSkeletonDuration] = useState(350);
   const [networkDelay, setNetworkDelay] = useState(600);
 
-  const [fluidState, setFluidState] = useState<FluidState>('loading');
+  const [fluidState, setFluidState] = useState<FluidLoadingState>('loading');
   const [internalState, setInternalState] = useState<InternalState>('loading');
   const [lastSnapshot, setLastSnapshot] = useState<LayoutSnapshot | null>(null);
 
@@ -162,8 +162,15 @@ export function App(): React.JSX.Element {
   return (
     <div className="playground-container">
       <header className="header">
-        <h1>Fluid Loading Playground</h1>
-        <p>Layout-aware transition engine: Estimated Surface → Precise Skeleton → Smooth Reveal</p>
+        <div className="header-brand">
+          <div className="header-logo-wrapper">
+            <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+          </div>
+          <h1>fluid-loading</h1>
+        </div>
+        <div className="header-badges">
+          <span className="version-pill">v0.1.0</span>
+        </div>
       </header>
 
       <div className="main-layout">
@@ -178,15 +185,7 @@ export function App(): React.JSX.Element {
           </div>
 
           <button
-            style={{
-              background: 'transparent',
-              border: '1px solid #334155',
-              borderRadius: 6,
-              color: '#94a3b8',
-              padding: '6px',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-            }}
+            className="reset-button"
             onClick={applyDefaultPreset}
           >
             Reset to Standard Timing
@@ -326,7 +325,7 @@ export function App(): React.JSX.Element {
             </div>
 
             <div className="preview-wrapper">
-              <Fluid
+              <FluidLoading
                 loading={loading}
                 error={isError ? new Error('Simulated network failure') : undefined}
                 estimatedHeight={estimatedHeight}
@@ -337,7 +336,7 @@ export function App(): React.JSX.Element {
                 onInternalStateChange={setInternalState}
                 onSnapshot={setLastSnapshot}
                 errorFallback={
-                  <div className="fluid-error-container">
+                  <div className="fluid-loading-error-container">
                     <p>Failed to load data. The container surface remained stable.</p>
                     <button className="content-card-action" onClick={triggerLoad}>
                       Retry
@@ -346,15 +345,27 @@ export function App(): React.JSX.Element {
                 }
               >
                 {renderContent(contentType, variation)}
-              </Fluid>
+              </FluidLoading>
             </div>
           </div>
+        </main>
+      </div>
 
-          {lastSnapshot && lastSnapshot.bones.length > 0 && (
-            <div className="benchmark-card">
-              <h2>Precise Skeleton Bones Detected ({lastSnapshot.bones.length})</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 0.5rem 0' }}>
-                Snapshot: {lastSnapshot.width}x{lastSnapshot.height}px |{' '}
+      <section className="bento-grid">
+        <div className="bento-card">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <span className="bento-tag">Inspection</span>
+              <h2>Precise Skeleton Bones Detected</h2>
+            </div>
+            {lastSnapshot && (
+              <span className="bento-count-badge">{lastSnapshot.bones.length} bones</span>
+            )}
+          </div>
+          {lastSnapshot && lastSnapshot.bones.length > 0 ? (
+            <>
+              <p className="bento-subtitle">
+                Snapshot: <strong>{lastSnapshot.width}×{lastSnapshot.height}px</strong> &bull;{' '}
                 {lastSnapshot.bones.filter((b) => b.type === 'text').length} text,{' '}
                 {lastSnapshot.bones.filter((b) => b.type === 'rect').length} rect,{' '}
                 {lastSnapshot.bones.filter((b) => b.type === 'circle').length} circle
@@ -366,30 +377,42 @@ export function App(): React.JSX.Element {
                   </span>
                 ))}
               </div>
+            </>
+          ) : (
+            <div className="bento-empty-state">
+              <span>Waiting for initial render snapshot...</span>
             </div>
           )}
+        </div>
 
-          <div className="benchmark-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="bento-card">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <span className="bento-tag">Performance</span>
               <h2>DOM Scalability Benchmark</h2>
-              <button
-                className="content-card-action"
-                onClick={runBenchmark}
-                disabled={isBenchmarking}
-              >
-                {isBenchmarking ? 'Running...' : 'Run Benchmark'}
-              </button>
             </div>
+            <button
+              className="content-card-action bento-action-button"
+              onClick={runBenchmark}
+              disabled={isBenchmarking}
+            >
+              {isBenchmarking ? 'Running...' : 'Run Benchmark'}
+            </button>
+          </div>
+          <p className="bento-subtitle">
+            Recursive element scanning, snapshot serialization, and skeleton generation.
+          </p>
 
-            {benchmarkResults.length > 0 && (
+          {benchmarkResults.length > 0 ? (
+            <div className="bento-table-wrapper">
               <table className="benchmark-table">
                 <thead>
                   <tr>
                     <th>DOM Nodes</th>
-                    <th>Measure Time</th>
-                    <th>Bones Detected</th>
+                    <th>Scan Time</th>
+                    <th>Bones</th>
                     <th>Snapshot Size</th>
-                    <th>Skeleton Build Time</th>
+                    <th>Skeleton Build</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -398,16 +421,20 @@ export function App(): React.JSX.Element {
                       <td>{res.nodeCount} nodes</td>
                       <td>{res.scanTimeMs} ms</td>
                       <td>{res.boneCount}</td>
-                      <td>{res.snapshotBytes} bytes</td>
+                      <td>{res.snapshotBytes} B</td>
                       <td>{res.skeletonDomTimeMs} ms</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
-        </main>
-      </div>
+            </div>
+          ) : (
+            <div className="bento-empty-state">
+              <span>Click "Run Benchmark" to test throughput across 10, 100, 500, and 1,000 DOM nodes.</span>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -421,12 +448,13 @@ function renderContent(type: ContentType, variation: ContentVariation) {
     case 'card':
       return (
         <div className="content-card">
-          <div
+          <img
+            src="/banner.jpg"
+            alt="fluid-loading banner"
             className="content-card-image"
-            data-fluid-type="rect"
+            data-fluid-loading-type="rect"
             style={{
-              background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-              height: variation === 'short' ? 120 : variation === 'long' ? 240 : 180,
+              height: variation === 'short' ? 140 : variation === 'long' ? 240 : 180,
             }}
           />
           <div className="content-card-body">
@@ -451,8 +479,12 @@ function renderContent(type: ContentType, variation: ContentVariation) {
           <div className="content-card-meta">
             <div
               className="content-avatar"
-              style={{ background: '#38bdf8', borderRadius: '50%' }}
-              data-fluid-type="circle"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                borderRadius: '50%',
+                boxShadow: '0 0 12px rgba(245, 158, 11, 0.35)',
+              }}
+              data-fluid-loading-type="circle"
             />
             <div>
               <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#f8fafc' }}>Elena Rostova</h3>
@@ -482,13 +514,15 @@ function renderContent(type: ContentType, variation: ContentVariation) {
       return (
         <div className="content-card" style={{ padding: '2rem', textAlign: 'center' }}>
           <div
-            data-fluid-type="circle"
+            data-fluid-loading-type="circle"
             style={{
               width: 80,
               height: 80,
               borderRadius: '50%',
               margin: '0 auto 1rem',
-              background: 'linear-gradient(135deg, #38bdf8, #818cf8)',
+              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #b45309 100%)',
+              boxShadow: '0 0 20px rgba(245, 158, 11, 0.4)',
+              border: '2px solid rgba(251, 191, 36, 0.3)',
             }}
           />
           <h2 className="content-card-title" style={{ margin: 0 }}>Sofia Mendes</h2>
@@ -499,16 +533,16 @@ function renderContent(type: ContentType, variation: ContentVariation) {
           {variation !== 'short' && (
             <div className="stats-grid">
               <div className="stat-item">
-                <div data-fluid-ignore className="stat-value">142</div>
-                <div data-fluid-ignore className="stat-label">Projects</div>
+                <div data-fluid-loading-ignore className="stat-value">142</div>
+                <div data-fluid-loading-ignore className="stat-label">Projects</div>
               </div>
               <div className="stat-item">
-                <div data-fluid-ignore className="stat-value">18.4k</div>
-                <div data-fluid-ignore className="stat-label">Followers</div>
+                <div data-fluid-loading-ignore className="stat-value">18.4k</div>
+                <div data-fluid-loading-ignore className="stat-label">Followers</div>
               </div>
               <div className="stat-item">
-                <div data-fluid-ignore className="stat-value">890</div>
-                <div data-fluid-ignore className="stat-label">Stars</div>
+                <div data-fluid-loading-ignore className="stat-value">890</div>
+                <div data-fluid-loading-ignore className="stat-label">Stars</div>
               </div>
             </div>
           )}
@@ -521,17 +555,17 @@ function renderContent(type: ContentType, variation: ContentVariation) {
         <div className="content-card" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h3 style={{ margin: 0, fontSize: '1rem', color: '#94a3b8' }}>Total Revenue</h3>
-            <span style={{ color: '#4ade80', fontSize: '0.85rem', fontWeight: 600 }}>+18.2%</span>
+            <span style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 600 }}>+18.2%</span>
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem' }}>
             $84,230.00
           </div>
           <div
-            data-fluid-type="rect"
+            data-fluid-loading-type="rect"
             style={{
               height: variation === 'short' ? 60 : variation === 'long' ? 160 : 100,
-              background: 'linear-gradient(180deg, rgba(56, 189, 248, 0.2) 0%, rgba(56, 189, 248, 0.02) 100%)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
+              background: 'linear-gradient(180deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.02) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
               borderRadius: 8,
               marginBottom: '1rem',
             }}

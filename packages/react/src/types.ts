@@ -1,7 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { FluidState, InternalState, LayoutSnapshot } from '@fluid-loading/core';
+import type { FluidLoadingState, InternalState, LayoutSnapshot } from '@fluid-loading/core';
 
-export interface FluidProps {
+export type { FluidLoadingState, InternalState, LayoutSnapshot };
+
+export interface FluidLoadingProps {
   loading: boolean;
   error?: unknown;
   estimatedHeight?: number;
@@ -14,7 +16,7 @@ export interface FluidProps {
   errorFallback?: ReactNode | ((props: { error: unknown }) => ReactNode);
   className?: string;
   style?: CSSProperties;
-  onStateChange?: (state: FluidState) => void;
+  onStateChange?: (state: FluidLoadingState) => void;
   onInternalStateChange?: (state: InternalState) => void;
   onSnapshot?: (snapshot: LayoutSnapshot) => void;
 }

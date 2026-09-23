@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { Fluid } from '../Fluid.js';
+import { FluidLoading } from '../FluidLoading.js';
 
-describe('<Fluid /> integration', () => {
+describe('<FluidLoading /> integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -25,7 +25,7 @@ describe('<Fluid /> integration', () => {
     );
 
     const { rerender } = render(
-      <Fluid
+      <FluidLoading
         loading={true}
         estimatedHeight={300}
         duration={100}
@@ -34,16 +34,16 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <Card />
-      </Fluid>
+      </FluidLoading>
     );
 
-    const root = document.querySelector('.fluid-root') as HTMLElement;
+    const root = document.querySelector('.fluid-loading-root') as HTMLElement;
     expect(root).toBeInTheDocument();
     expect(root.getAttribute('aria-busy')).toBe('true');
-    expect(document.querySelector('.fluid-estimated')).toBeInTheDocument();
+    expect(document.querySelector('.fluid-loading-estimated')).toBeInTheDocument();
 
     rerender(
-      <Fluid
+      <FluidLoading
         loading={false}
         estimatedHeight={300}
         duration={100}
@@ -52,7 +52,7 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <Card />
-      </Fluid>
+      </FluidLoading>
     );
 
     act(() => {
@@ -80,18 +80,18 @@ describe('<Fluid /> integration', () => {
 
   it('supports variable content heights', () => {
     const { rerender } = render(
-      <Fluid loading={true} estimatedHeight={120}>
+      <FluidLoading loading={true} estimatedHeight={120}>
         <div style={{ height: 100 }}>Short content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
-    const root = document.querySelector('.fluid-root') as HTMLElement;
+    const root = document.querySelector('.fluid-loading-root') as HTMLElement;
     expect(root.style.height).toBe('120px');
 
     rerender(
-      <Fluid loading={true} estimatedHeight={450}>
+      <FluidLoading loading={true} estimatedHeight={450}>
         <div style={{ height: 400 }}>Long content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     expect(root.style.height).toBe('450px');
@@ -101,17 +101,17 @@ describe('<Fluid /> integration', () => {
     const states: string[] = [];
 
     render(
-      <Fluid
+      <FluidLoading
         loading={false}
         error={new Error('Data fetch failed')}
         estimatedHeight={280}
         onStateChange={(state) => states.push(state)}
       >
         <div>Should not be visible</div>
-      </Fluid>
+      </FluidLoading>
     );
 
-    const root = document.querySelector('.fluid-root') as HTMLElement;
+    const root = document.querySelector('.fluid-loading-root') as HTMLElement;
     expect(root.style.height).toBe('280px');
     expect(states).toContain('error');
     expect(screen.getByText('Failed to load content')).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe('<Fluid /> integration', () => {
     const states: string[] = [];
 
     const { rerender } = render(
-      <Fluid
+      <FluidLoading
         loading={true}
         duration={50}
         revealDuration={30}
@@ -129,11 +129,11 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Fast Content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     rerender(
-      <Fluid
+      <FluidLoading
         loading={false}
         duration={50}
         revealDuration={30}
@@ -141,7 +141,7 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Fast Content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     act(() => {
@@ -167,18 +167,18 @@ describe('<Fluid /> integration', () => {
 
   it('maintains estimated skeleton while in loading state', () => {
     render(
-      <Fluid loading={true} estimatedHeight={320}>
+      <FluidLoading loading={true} estimatedHeight={320}>
         <div>Will load eventually</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
-    const root = document.querySelector('.fluid-root') as HTMLElement;
+    const root = document.querySelector('.fluid-loading-root') as HTMLElement;
     expect(root.getAttribute('aria-busy')).toBe('true');
-    expect(document.querySelector('.fluid-estimated')).toBeInTheDocument();
+    expect(document.querySelector('.fluid-loading-estimated')).toBeInTheDocument();
   });
 
   it('bypasses animation delays when reduced motion is preferred', () => {
@@ -195,7 +195,7 @@ describe('<Fluid /> integration', () => {
     }));
 
     const { rerender } = render(
-      <Fluid
+      <FluidLoading
         loading={true}
         duration={300}
         revealDuration={150}
@@ -203,11 +203,11 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Accessible Content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     rerender(
-      <Fluid
+      <FluidLoading
         loading={false}
         duration={300}
         revealDuration={150}
@@ -215,7 +215,7 @@ describe('<Fluid /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Accessible Content</div>
-      </Fluid>
+      </FluidLoading>
     );
 
     act(() => {

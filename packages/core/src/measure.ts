@@ -82,8 +82,8 @@ function hasRenderableText(element: HTMLElement): boolean {
 }
 
 export function measureElement(root: HTMLElement, options: MeasureOptions = {}): LayoutSnapshot {
-  const ignoreAttr = options.ignoreAttribute ?? 'data-fluid-ignore';
-  const typeAttr = options.typeAttribute ?? 'data-fluid-type';
+  const ignoreAttr = options.ignoreAttribute ?? 'data-fluid-loading-ignore';
+  const typeAttr = options.typeAttribute ?? 'data-fluid-loading-type';
   const minDim = options.minDimension ?? 1;
 
   const rootRect = root.getBoundingClientRect();

@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      '@fluid-loading/core/styles.css': path.resolve(__dirname, '../packages/core/styles.css'),
       '@fluid-loading/core': path.resolve(__dirname, '../packages/core/src/index.ts'),
       '@fluid-loading/react': path.resolve(__dirname, '../packages/react/src/index.ts'),
-      '@fluid-loading/styles': path.resolve(__dirname, '../packages/styles/fluid.css'),
     },
   },
   server: {

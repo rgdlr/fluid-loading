@@ -1,6 +1,6 @@
-import type { FluidState, InternalState } from './types.js';
+import type { FluidLoadingState, InternalState } from './types.js';
 
-export function toPublicState(internal: InternalState): FluidState {
+export function toPublicState(internal: InternalState): FluidLoadingState {
   switch (internal) {
     case 'loading':
       return 'loading';
@@ -26,10 +26,10 @@ const ALLOWED_TRANSITIONS: Record<InternalState, ReadonlySet<InternalState>> = {
   error: new Set(['loading', 'measuring']),
 };
 
-export class FluidStateMachine {
+export class FluidLoadingStateMachine {
   private currentState: InternalState;
   private currentError: unknown = null;
-  private readonly listeners = new Set<(internal: InternalState, publicState: FluidState) => void>();
+  private readonly listeners = new Set<(internal: InternalState, publicState: FluidLoadingState) => void>();
 
   constructor(initialState: InternalState = 'loading') {
     this.currentState = initialState;
@@ -39,7 +39,7 @@ export class FluidStateMachine {
     return this.currentState;
   }
 
-  get publicState(): FluidState {
+  get publicState(): FluidLoadingState {
     return toPublicState(this.currentState);
   }
 
@@ -73,7 +73,7 @@ export class FluidStateMachine {
     this.notify();
   }
 
-  subscribe(listener: (internal: InternalState, publicState: FluidState) => void): () => void {
+  subscribe(listener: (internal: InternalState, publicState: FluidLoadingState) => void): () => void {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);

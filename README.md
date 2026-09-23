@@ -2,7 +2,7 @@
 
 A layout-aware loading transition engine for React and the DOM.
 
-![fluid loading banner](./docs/banner.jpg)
+![fluid loading banner](./playground/public/banner.jpg)
 
 Instead of abrupt jumps between generic placeholders and final content, Fluid Loading measures the real DOM in-flight, smoothly morphs the container geometry, displays an accurate skeleton overlay, and seamlessly reveals the final layout without layout shifts.
 
@@ -21,25 +21,25 @@ seamless content reveal
 ## Installation
 
 ```bash
-npm install @fluid-loading/react @fluid-loading/styles
+npm install @fluid-loading/react @fluid-loading/core
 ```
 
 ```bash
-pnpm add @fluid-loading/react @fluid-loading/styles
+pnpm add @fluid-loading/react @fluid-loading/core
 ```
 
 ## Quick Start
 
-Import the `@fluid-loading/react` component and the stylesheet:
+Import the `FluidLoading` component and the stylesheet:
 
 ```tsx
 import React from 'react';
-import { Fluid } from '@fluid-loading/react';
-import '@fluid-loading/styles';
+import { FluidLoading } from '@fluid-loading/react';
+import '@fluid-loading/core/styles.css';
 
 export function Article({ loading, error, data }) {
   return (
-    <Fluid
+    <FluidLoading
       loading={loading}
       error={error}
       estimatedHeight={320}
@@ -50,7 +50,7 @@ export function Article({ loading, error, data }) {
         <p>{data?.description}</p>
         <button type="button">Read more</button>
       </article>
-    </Fluid>
+    </FluidLoading>
   );
 }
 ```
@@ -58,7 +58,7 @@ export function Article({ loading, error, data }) {
 ## Configuration
 
 ```tsx
-<Fluid
+<FluidLoading
   loading={loading}
   error={error}
   estimatedHeight={360}
@@ -72,7 +72,7 @@ export function Article({ loading, error, data }) {
   )}
 >
   <DashboardCard metrics={metrics} />
-</Fluid>
+</FluidLoading>
 ```
 
 ### Props
@@ -88,19 +88,19 @@ export function Article({ loading, error, data }) {
 | `minimumSkeletonDuration`| `number` | `120` | Minimum duration precise skeleton is shown to prevent flashes. |
 | `fallback` | `ReactNode` | `undefined` | Custom placeholder shown during estimated loading. |
 | `errorFallback` | `ReactNode \| Function` | Default UI | Custom component or render function for error states. |
-| `onStateChange` | `(state: FluidState) => void` | `undefined` | Callback emitted on state change (`loading`, `transitioning`, `ready`, `error`). |
+| `onStateChange` | `(state: FluidLoadingState) => void` | `undefined` | Callback emitted on state change (`loading`, `transitioning`, `ready`, `error`). |
 | `onSnapshot` | `(snapshot: LayoutSnapshot) => void` | `undefined` | Emits measured geometry bones and dimensions. |
 
 ## HTML Control Attributes
 
 Use HTML attributes on target child nodes to fine-tune automatic skeleton detection:
 
-- `data-fluid-ignore`: Excludes the element from skeleton calculation.
-- `data-fluid-type="text | rect | circle"`: Explicitly forces bone rendering type.
+- `data-fluid-loading-ignore`: Excludes the element from skeleton calculation.
+- `data-fluid-loading-type="text | rect | circle"`: Explicitly forces bone rendering type.
 
 ```html
-<div class="user-avatar" data-fluid-type="circle"></div>
-<button data-fluid-ignore>Dismiss</button>
+<div class="user-avatar" data-fluid-loading-type="circle"></div>
+<button data-fluid-loading-ignore>Dismiss</button>
 ```
 
 ## Accessibility & Reduced Motion

@@ -5,7 +5,7 @@ export function createSkeletonElement(
   options: { className?: string; includeShimmer?: boolean } = {}
 ): HTMLElement {
   const container = document.createElement('div');
-  container.className = `fluid-skeleton ${options.className ?? ''}`.trim();
+  container.className = `fluid-loading-skeleton ${options.className ?? ''}`.trim();
   container.setAttribute('aria-hidden', 'true');
   container.style.position = 'absolute';
   container.style.inset = '0';
@@ -15,13 +15,13 @@ export function createSkeletonElement(
 
   if (options.includeShimmer !== false) {
     const shimmer = document.createElement('div');
-    shimmer.className = 'fluid-shimmer';
+    shimmer.className = 'fluid-loading-shimmer';
     container.appendChild(shimmer);
   }
 
   for (const bone of snapshot.bones) {
     const boneEl = document.createElement('div');
-    boneEl.className = `fluid-bone fluid-bone-${bone.type}`;
+    boneEl.className = `fluid-loading-bone fluid-loading-bone-${bone.type}`;
     boneEl.style.position = 'absolute';
     boneEl.style.left = `${bone.x}px`;
     boneEl.style.top = `${bone.y}px`;
@@ -43,7 +43,7 @@ export function createEstimatedSkeletonElement(
   width: number | string = '100%'
 ): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'fluid-skeleton fluid-estimated';
+  container.className = 'fluid-loading-skeleton fluid-loading-estimated';
   container.setAttribute('aria-hidden', 'true');
   container.style.position = 'relative';
   container.style.width = typeof width === 'number' ? `${width}px` : width;
@@ -51,7 +51,7 @@ export function createEstimatedSkeletonElement(
   container.style.overflow = 'hidden';
 
   const shimmer = document.createElement('div');
-  shimmer.className = 'fluid-shimmer';
+  shimmer.className = 'fluid-loading-shimmer';
   container.appendChild(shimmer);
 
   return container;

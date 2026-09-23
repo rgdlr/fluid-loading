@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FluidStateMachine, toPublicState } from '../state.js';
+import { FluidLoadingStateMachine, toPublicState } from '../state.js';
 
 describe('toPublicState', () => {
   it('maps internal states to public states correctly', () => {
@@ -13,16 +13,16 @@ describe('toPublicState', () => {
   });
 });
 
-describe('FluidStateMachine', () => {
+describe('FluidLoadingStateMachine', () => {
   it('initializes with default loading state', () => {
-    const sm = new FluidStateMachine();
+    const sm = new FluidLoadingStateMachine();
     expect(sm.state).toBe('loading');
     expect(sm.publicState).toBe('loading');
     expect(sm.error).toBeNull();
   });
 
   it('handles standard transition flow', () => {
-    const sm = new FluidStateMachine();
+    const sm = new FluidLoadingStateMachine();
     const transitions: string[] = [];
     sm.subscribe((internal, pub) => {
       transitions.push(`${internal}:${pub}`);
@@ -55,7 +55,7 @@ describe('FluidStateMachine', () => {
   });
 
   it('transitions to error from loading without layout collapse', () => {
-    const sm = new FluidStateMachine();
+    const sm = new FluidLoadingStateMachine();
     const testError = new Error('Network failure');
     expect(sm.setError(testError)).toBe(true);
     expect(sm.state).toBe('error');
@@ -64,13 +64,13 @@ describe('FluidStateMachine', () => {
   });
 
   it('rejects invalid state transitions', () => {
-    const sm = new FluidStateMachine();
+    const sm = new FluidLoadingStateMachine();
     expect(sm.transition('ready')).toBe(false);
     expect(sm.state).toBe('loading');
   });
 
   it('allows reset back to loading', () => {
-    const sm = new FluidStateMachine('ready');
+    const sm = new FluidLoadingStateMachine('ready');
     sm.reset();
     expect(sm.state).toBe('loading');
     expect(sm.publicState).toBe('loading');

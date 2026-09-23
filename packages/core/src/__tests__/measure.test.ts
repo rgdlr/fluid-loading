@@ -73,13 +73,13 @@ describe('measureElement', () => {
     document.body.removeChild(root);
   });
 
-  it('respects data-fluid-ignore', () => {
+  it('respects data-fluid-loading-ignore', () => {
     const root = document.createElement('div');
     setMockRect(root, { left: 0, top: 0, width: 300, height: 200 });
 
     const button = document.createElement('button');
     button.textContent = 'Ignored Button';
-    button.setAttribute('data-fluid-ignore', '');
+    button.setAttribute('data-fluid-loading-ignore', '');
     setMockRect(button, { left: 10, top: 10, width: 100, height: 40 });
     root.appendChild(button);
 
@@ -91,12 +91,12 @@ describe('measureElement', () => {
     document.body.removeChild(root);
   });
 
-  it('detects explicit data-fluid-type overrides', () => {
+  it('detects explicit data-fluid-loading-type overrides', () => {
     const root = document.createElement('div');
     setMockRect(root, { left: 0, top: 0, width: 300, height: 200 });
 
     const customEl = document.createElement('div');
-    customEl.setAttribute('data-fluid-type', 'circle');
+    customEl.setAttribute('data-fluid-loading-type', 'circle');
     setMockRect(customEl, { left: 10, top: 10, width: 50, height: 50 });
     root.appendChild(customEl);
 
