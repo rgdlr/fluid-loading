@@ -1,0 +1,13 @@
+{
+  "name": "@fluid-loading/styles",
+  "version": "0.1.0",
+  "description": "CSS stylesheet and animations for Fluid Loading",
+  "license": "MIT",
+  "exports": {
+    "./fluid.css": "./fluid.css",
+    "./styles.css": "./fluid.css"
+  },
+  "files": [
+    "fluid.css"
+  ]
+}
