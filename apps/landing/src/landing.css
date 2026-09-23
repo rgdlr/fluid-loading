@@ -2,6 +2,21 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+*:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+input[type="range"] {
+  accent-color: #fbbf24;
+  cursor: pointer;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -89,6 +104,8 @@ code, pre {
   grid-template-columns: 380px 1fr;
   gap: 2rem;
   align-items: stretch;
+  max-width: 1160px;
+  margin: 0 auto;
 }
 
 @media (max-width: 980px) {
@@ -133,7 +150,7 @@ code, pre {
   font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: filter 0.15s;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,6 +158,7 @@ code, pre {
 
 .trigger-button:hover {
   filter: brightness(1.08);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
 }
 
 .trigger-button:active {
@@ -148,7 +166,7 @@ code, pre {
 }
 
 .preset-button {
-  background: #1a1e28;
+  background: #161922;
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 10px;
@@ -156,29 +174,39 @@ code, pre {
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .preset-button:hover {
   background: #232836;
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: rgba(245, 158, 11, 0.45);
   color: #fef08a;
 }
 
+.preset-button:active {
+  background: #141720;
+}
+
 .reset-button {
-  background: transparent;
+  background: #161922;
   border: 1px solid #232836;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #94a3b8;
-  padding: 7px;
-  font-size: 0.8rem;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .reset-button:hover {
-  border-color: #334155;
-  color: #e2e8f0;
+  background: #232836;
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+.reset-button:active {
+  background: #141720;
 }
 
 .control-group {
@@ -423,19 +451,20 @@ input[type="range"] {
 }
 
 .content-card-action {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
   color: #0c0e14;
   font-weight: 700;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.65rem 1.35rem;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: filter 0.15s;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
 }
 
 .content-card-action:hover {
   filter: brightness(1.08);
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.25);
 }
 
 .content-card-action:active {
@@ -474,7 +503,8 @@ input[type="range"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
-  margin-top: 2rem;
+  margin: 2rem auto 0;
+  max-width: 1160px;
 }
 
 @media (max-width: 980px) {
@@ -854,25 +884,29 @@ input[type="range"] {
 }
 
 .copy-css-btn {
-  background: #1a1e28;
+  background: #161922;
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 8px;
-  padding: 7px 12px;
+  border-radius: 10px;
+  padding: 7px 14px;
   font-weight: 600;
   font-size: 0.82rem;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .copy-css-btn:hover {
   background: #232836;
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: rgba(245, 158, 11, 0.45);
   color: #fef08a;
+}
+
+.copy-css-btn:active {
+  background: #141720;
 }
 
 /* Landing Page Navigation Bar */
@@ -880,8 +914,8 @@ input[type="range"] {
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   background: rgba(12, 14, 20, 0.88);
   border-bottom: 1px solid rgba(35, 40, 54, 0.7);
   margin-bottom: 1.5rem;
@@ -895,6 +929,38 @@ input[type="range"] {
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
+}
+
+.navbar .header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.navbar .header-logo-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2), 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.navbar .header-brand h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.navbar .version-pill {
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
 }
 
 .nav-links {
@@ -918,55 +984,31 @@ input[type="range"] {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.nav-install-pill {
-  background: #141720;
-  border: 1px solid #232836;
-  border-radius: 8px;
-  padding: 6px 12px;
-  color: #fbbf24;
-  font-size: 0.78rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  transition: border-color 0.15s, background-color 0.15s;
-}
-
-.nav-install-pill:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  background: #1a1e28;
-}
-
-.nav-install-pill span {
-  color: #94a3b8;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.04em;
 }
 
 .nav-github-btn {
-  background: #1e2433;
+  background: #161922;
   border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 10px;
+  padding: 7px 14px;
   color: #f8fafc;
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .nav-github-btn:hover {
-  background: #283044;
+  background: #232836;
   border-color: rgba(245, 158, 11, 0.5);
   color: #fbbf24;
+}
+
+.nav-github-btn:active {
+  background: #141720;
 }
 
 /* Landing Page Hero */
@@ -1025,7 +1067,7 @@ input[type="range"] {
 }
 
 .hero-cta-btn {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24, #d97706);
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
   color: #0c0e14;
   border: none;
   border-radius: 10px;
@@ -1034,17 +1076,21 @@ input[type="range"] {
   font-size: 0.95rem;
   text-decoration: none;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.15s;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
 
 .hero-cta-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.hero-cta-btn:active {
+  filter: brightness(0.95);
 }
 
 .hero-terminal-btn {
-  background: #141720;
+  background: #161922;
   border: 1px solid #232836;
   border-radius: 10px;
   padding: 0.85rem 1.4rem;
@@ -1054,12 +1100,17 @@ input[type="range"] {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .hero-terminal-btn:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  background: #1a1e28;
+  border-color: rgba(245, 158, 11, 0.45);
+  background: #232836;
+  color: #fef08a;
+}
+
+.hero-terminal-btn:active {
+  background: #141720;
 }
 
 .hero-terminal-btn span {
@@ -1104,11 +1155,16 @@ input[type="range"] {
 
 /* Section Headers */
 .section-header {
-  text-align: center;
+  text-align: left;
   margin: 4.5rem 0 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .section-tag {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1125,15 +1181,17 @@ input[type="range"] {
   font-size: 2.15rem;
   font-weight: 800;
   color: #ffffff;
-  margin: 0.85rem 0 0.45rem;
+  margin: 0.75rem 0 0.45rem;
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .section-desc {
   font-size: 1rem;
   color: #94a3b8;
-  max-width: 660px;
-  margin: 0 auto;
+  max-width: 680px;
+  margin: 0;
+  line-height: 1.6;
 }
 
 /* Additional Features Grid */
@@ -1141,7 +1199,8 @@ input[type="range"] {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  margin-top: 1.5rem;
+  margin: 1.5rem auto 0;
+  max-width: 1160px;
 }
 
 .feature-mini-card {
@@ -1154,6 +1213,12 @@ input[type="range"] {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-mini-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.7);
 }
 
 .feature-mini-card::before {
@@ -1192,9 +1257,16 @@ input[type="range"] {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
-  max-width: 860px;
+  max-width: 800px;
   margin: 0 auto;
+  width: 100%;
   position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quickstart-card:hover {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.7);
 }
 
 .quickstart-card::before {
@@ -1237,8 +1309,8 @@ input[type="range"] {
 /* Landing Page Footer */
 .landing-footer {
   margin-top: 5rem;
-  padding: 3.5rem 1.5rem 4rem;
-  border-top: 1px solid #232836;
+  padding: 4rem 1.5rem 3.5rem;
+  border-top: none;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1306,9 +1378,6 @@ input[type="range"] {
   }
   .hero-highlights-strip {
     grid-template-columns: 1fr;
-  }
-  .nav-install-pill {
-    display: none;
   }
 }
 
