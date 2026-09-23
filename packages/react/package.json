@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
-    "build": "pnpm run clean && tsc && node -e \"fs.copyFileSync('../core/styles.css', 'dist/styles.css')\"",
+    "build": "pnpm run clean && tsc && node -e \"fs.copyFileSync('../core/src/styles.css', 'dist/styles.css')\"",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.resolve(__dirname, 'dist');
+const distDir = path.resolve(__dirname, '..', 'dist');
 const templatePath = path.resolve(distDir, 'index.html');
 const ssrEntryPath = path.resolve(distDir, 'ssr', 'entry-server.js');
 
