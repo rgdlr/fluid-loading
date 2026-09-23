@@ -8,19 +8,83 @@ import {
   type InternalState,
   type LayoutSnapshot,
 } from '@fluid-loading/core';
-import '@fluid-loading/core/styles.css';
 import './playground.css';
 
 type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
 type ContentVariation = 'short' | 'medium' | 'long' | 'error';
 type MotionMode = 'normal' | 'reduced';
+type SidebarTab = 'behavior' | 'styles';
 
-interface BenchmarkResult {
-  nodeCount: number;
-  scanTimeMs: number;
-  boneCount: number;
-  snapshotBytes: number;
-  skeletonDomTimeMs: number;
+interface ThemePreset {
+  id: string;
+  name: string;
+  boneBg: string;
+  surfaceBg: string;
+  shimmerHex: string;
+  shimmerOpacity: number;
+  shimmerDuration: number;
+  containerRadius: number;
+  textRadius: number;
+  rectRadius: number;
+}
+
+const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: 'amber',
+    name: 'Amber Glow',
+    boneBg: '#353d4f',
+    surfaceBg: '#1c202b',
+    shimmerHex: '#fbbf24',
+    shimmerOpacity: 25,
+    shimmerDuration: 1.5,
+    containerRadius: 14,
+    textRadius: 5,
+    rectRadius: 8,
+  },
+  {
+    id: 'slate',
+    name: 'Slate Minimal',
+    boneBg: '#272f3d',
+    surfaceBg: '#0f172a',
+    shimmerHex: '#94a3b8',
+    shimmerOpacity: 20,
+    shimmerDuration: 1.8,
+    containerRadius: 8,
+    textRadius: 3,
+    rectRadius: 6,
+  },
+  {
+    id: 'violet',
+    name: 'Cyberpunk Violet',
+    boneBg: '#2d1b4e',
+    surfaceBg: '#130924',
+    shimmerHex: '#e879f9',
+    shimmerOpacity: 35,
+    shimmerDuration: 1.2,
+    containerRadius: 16,
+    textRadius: 6,
+    rectRadius: 12,
+  },
+  {
+    id: 'emerald',
+    name: 'Emerald Matrix',
+    boneBg: '#063828',
+    surfaceBg: '#021e15',
+    shimmerHex: '#34d399',
+    shimmerOpacity: 30,
+    shimmerDuration: 1.4,
+    containerRadius: 12,
+    textRadius: 4,
+    rectRadius: 8,
+  }
+];
+
+function hexToRgba(hex: string, alphaPercent: number): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16) || 0;
+  const g = parseInt(clean.substring(2, 4), 16) || 0;
+  const b = parseInt(clean.substring(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${(alphaPercent / 100).toFixed(2)})`;
 }
 
 export function App(): React.JSX.Element {
@@ -33,6 +97,18 @@ export function App(): React.JSX.Element {
   const [revealDuration, setRevealDuration] = useState(200);
   const [minimumSkeletonDuration, setMinimumSkeletonDuration] = useState(350);
   const [networkDelay, setNetworkDelay] = useState(600);
+
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('behavior');
+  const [selectedPreset, setSelectedPreset] = useState<string>('amber');
+  const [boneBg, setBoneBg] = useState('#353d4f');
+  const [surfaceBg, setSurfaceBg] = useState('#1c202b');
+  const [shimmerHex, setShimmerHex] = useState('#fbbf24');
+  const [shimmerOpacity, setShimmerOpacity] = useState(25);
+  const [shimmerDuration, setShimmerDuration] = useState(1.5);
+  const [containerRadius, setContainerRadius] = useState(14);
+  const [textRadius, setTextRadius] = useState(5);
+  const [rectRadius, setRectRadius] = useState(8);
+  const [copiedCss, setCopiedCss] = useState(false);
 
   const [fluidState, setFluidState] = useState<FluidLoadingState>('loading');
   const [internalState, setInternalState] = useState<InternalState>('loading');
@@ -104,6 +180,39 @@ export function App(): React.JSX.Element {
     setMinimumSkeletonDuration(350);
     setRevealDuration(200);
     triggerLoad();
+  };
+
+  const applyThemePreset = (preset: ThemePreset) => {
+    setSelectedPreset(preset.id);
+    setBoneBg(preset.boneBg);
+    setSurfaceBg(preset.surfaceBg);
+    setShimmerHex(preset.shimmerHex);
+    setShimmerOpacity(preset.shimmerOpacity);
+    setShimmerDuration(preset.shimmerDuration);
+    setContainerRadius(preset.containerRadius);
+    setTextRadius(preset.textRadius);
+    setRectRadius(preset.rectRadius);
+  };
+
+  const resetStylesToDefault = () => {
+    applyThemePreset(THEME_PRESETS[0]);
+  };
+
+  const copyCssVariables = () => {
+    const shimmerColor = hexToRgba(shimmerHex, shimmerOpacity);
+    const css = `:root {
+  --fluid-loading-bone-bg: ${boneBg};
+  --fluid-loading-surface-bg: ${surfaceBg};
+  --fluid-loading-shimmer-color: ${shimmerColor};
+  --fluid-loading-shimmer-duration: ${shimmerDuration}s;
+  --fluid-loading-radius: ${containerRadius}px;
+  --fluid-loading-text-radius: ${textRadius}px;
+  --fluid-loading-rect-radius: ${rectRadius}px;
+}`;
+    navigator.clipboard.writeText(css).then(() => {
+      setCopiedCss(true);
+      window.setTimeout(() => setCopiedCss(false), 2000);
+    });
   };
 
   const runBenchmark = () => {
@@ -184,133 +293,359 @@ export function App(): React.JSX.Element {
             </button>
           </div>
 
-          <button
-            className="reset-button"
-            onClick={applyDefaultPreset}
-          >
-            Reset to Standard Timing
-          </button>
+          <div className="sidebar-tab-switcher">
+            <button
+              type="button"
+              className={`sidebar-tab-btn ${sidebarTab === 'behavior' ? 'active' : ''}`}
+              onClick={() => setSidebarTab('behavior')}
+            >
+              Timing & Layout
+            </button>
+            <button
+              type="button"
+              className={`sidebar-tab-btn ${sidebarTab === 'styles' ? 'active' : ''}`}
+              onClick={() => setSidebarTab('styles')}
+            >
+              Styles & Theme
+            </button>
+          </div>
 
-          <div className="control-group">
-            <label>
-              Content Type: <span className="value">{contentType}</span>
-            </label>
-            <div className="segmented-control">
-              {(['card', 'article', 'profile', 'dashboard'] as ContentType[]).map((type) => (
+          {sidebarTab === 'behavior' ? (
+            <>
+              <button
+                className="reset-button"
+                onClick={applyDefaultPreset}
+              >
+                Reset Timing and Layout
+              </button>
+
+              <div className="control-group">
+                <label>
+                  Content Type: <span className="value">{contentType}</span>
+                </label>
+                <div className="segmented-control">
+                  {(['card', 'article', 'profile', 'dashboard'] as ContentType[]).map((type) => (
+                    <button
+                      key={type}
+                      className={`segmented-button ${contentType === type ? 'active' : ''}`}
+                      onClick={() => handleContentTypeChange(type)}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Variation: <span className="value">{variation}</span>
+                </label>
+                <div className="segmented-control">
+                  {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
+                    <button
+                      key={v}
+                      className={`segmented-button ${variation === v ? 'active' : ''}`}
+                      onClick={() => handleVariationChange(v)}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Motion: <span className="value">{motionMode}</span>
+                </label>
+                <div className="segmented-control">
+                  {(['normal', 'reduced'] as MotionMode[]).map((m) => (
+                    <button
+                      key={m}
+                      className={`segmented-button ${motionMode === m ? 'active' : ''}`}
+                      onClick={() => setMotionMode(m)}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Estimated Height: <span className="value">{estimatedHeight}px</span>
+                </label>
+                <input
+                  type="range"
+                  min="100"
+                  max="600"
+                  step="10"
+                  value={estimatedHeight}
+                  onChange={(e) => setEstimatedHeight(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Morph Duration: <span className="value">{duration}ms</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1500"
+                  step="50"
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Min Skeleton Duration: <span className="value">{minimumSkeletonDuration}ms</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2000"
+                  step="50"
+                  value={minimumSkeletonDuration}
+                  onChange={(e) => setMinimumSkeletonDuration(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Reveal Duration: <span className="value">{revealDuration}ms</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="800"
+                  step="25"
+                  value={revealDuration}
+                  onChange={(e) => setRevealDuration(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Network Delay: <span className="value">{networkDelay}ms</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="2000"
+                  step="100"
+                  value={networkDelay}
+                  onChange={(e) => setNetworkDelay(Number(e.target.value))}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                className="reset-button"
+                onClick={resetStylesToDefault}
+              >
+                Reset Styles and Theme
+              </button>
+
+              <div className="control-group">
+                <label>Theme Presets</label>
+                <div className="theme-presets-grid">
+                  {THEME_PRESETS.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className={`theme-preset-card ${selectedPreset === preset.id ? 'active' : ''}`}
+                      onClick={() => applyThemePreset(preset)}
+                    >
+                      <span className="theme-preset-name">{preset.name}</span>
+                      <div className="theme-preset-preview">
+                        <span
+                          className="theme-preset-swatch"
+                          style={{ backgroundColor: preset.surfaceBg }}
+                          title="Surface"
+                        />
+                        <span
+                          className="theme-preset-swatch"
+                          style={{ backgroundColor: preset.boneBg }}
+                          title="Bone"
+                        />
+                        <span
+                          className="theme-preset-swatch"
+                          style={{ backgroundColor: preset.shimmerHex }}
+                          title="Shimmer"
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Bone Background: <span className="value">{boneBg}</span>
+                </label>
+                <span className="color-label-pill">--fluid-loading-bone-bg</span>
+                <div className="color-picker-field">
+                  <input
+                    type="color"
+                    className="color-swatch-input"
+                    value={boneBg}
+                    onChange={(e) => {
+                      setSelectedPreset('custom');
+                      setBoneBg(e.target.value);
+                    }}
+                  />
+                  <span className="color-value-text">{boneBg}</span>
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Surface Background: <span className="value">{surfaceBg}</span>
+                </label>
+                <span className="color-label-pill">--fluid-loading-surface-bg</span>
+                <div className="color-picker-field">
+                  <input
+                    type="color"
+                    className="color-swatch-input"
+                    value={surfaceBg}
+                    onChange={(e) => {
+                      setSelectedPreset('custom');
+                      setSurfaceBg(e.target.value);
+                    }}
+                  />
+                  <span className="color-value-text">{surfaceBg}</span>
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Shimmer Accent: <span className="value">{shimmerHex}</span>
+                </label>
+                <span className="color-label-pill">--fluid-loading-shimmer-color</span>
+                <div className="color-picker-field">
+                  <input
+                    type="color"
+                    className="color-swatch-input"
+                    value={shimmerHex}
+                    onChange={(e) => {
+                      setSelectedPreset('custom');
+                      setShimmerHex(e.target.value);
+                    }}
+                  />
+                  <span className="color-value-text">{hexToRgba(shimmerHex, shimmerOpacity)}</span>
+                </div>
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Shimmer Opacity: <span className="value">{shimmerOpacity}%</span>
+                </label>
+                <input
+                  type="range"
+                  min="5"
+                  max="90"
+                  step="5"
+                  value={shimmerOpacity}
+                  onChange={(e) => {
+                    setSelectedPreset('custom');
+                    setShimmerOpacity(Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Shimmer Wave Speed: <span className="value">{shimmerDuration}s</span>
+                </label>
+                <input
+                  type="range"
+                  min="0.6"
+                  max="3.0"
+                  step="0.1"
+                  value={shimmerDuration}
+                  onChange={(e) => {
+                    setSelectedPreset('custom');
+                    setShimmerDuration(Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Container Radius: <span className="value">{containerRadius}px</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="32"
+                  step="1"
+                  value={containerRadius}
+                  onChange={(e) => {
+                    setSelectedPreset('custom');
+                    setContainerRadius(Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Text Bone Radius: <span className="value">{textRadius}px</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={textRadius}
+                  onChange={(e) => {
+                    setSelectedPreset('custom');
+                    setTextRadius(Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="control-group">
+                <label>
+                  Rect Bone Radius: <span className="value">{rectRadius}px</span>
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="24"
+                  step="1"
+                  value={rectRadius}
+                  onChange={(e) => {
+                    setSelectedPreset('custom');
+                    setRectRadius(Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="css-export-section">
                 <button
-                  key={type}
-                  className={`segmented-button ${contentType === type ? 'active' : ''}`}
-                  onClick={() => handleContentTypeChange(type)}
+                  type="button"
+                  className="copy-css-btn"
+                  onClick={copyCssVariables}
                 >
-                  {type}
+                  {copiedCss ? '✓ Copied to Clipboard!' : 'Copy CSS Variables'}
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-group">
-            <label>
-              Variation: <span className="value">{variation}</span>
-            </label>
-            <div className="segmented-control">
-              {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
-                <button
-                  key={v}
-                  className={`segmented-button ${variation === v ? 'active' : ''}`}
-                  onClick={() => handleVariationChange(v)}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-group">
-            <label>
-              Motion: <span className="value">{motionMode}</span>
-            </label>
-            <div className="segmented-control">
-              {(['normal', 'reduced'] as MotionMode[]).map((m) => (
-                <button
-                  key={m}
-                  className={`segmented-button ${motionMode === m ? 'active' : ''}`}
-                  onClick={() => setMotionMode(m)}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-group">
-            <label>
-              Estimated Height: <span className="value">{estimatedHeight}px</span>
-            </label>
-            <input
-              type="range"
-              min="100"
-              max="600"
-              step="10"
-              value={estimatedHeight}
-              onChange={(e) => setEstimatedHeight(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="control-group">
-            <label>
-              Morph Duration: <span className="value">{duration}ms</span>
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="1500"
-              step="50"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="control-group">
-            <label>
-              Min Skeleton Duration: <span className="value">{minimumSkeletonDuration}ms</span>
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="2000"
-              step="50"
-              value={minimumSkeletonDuration}
-              onChange={(e) => setMinimumSkeletonDuration(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="control-group">
-            <label>
-              Reveal Duration: <span className="value">{revealDuration}ms</span>
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="800"
-              step="25"
-              value={revealDuration}
-              onChange={(e) => setRevealDuration(Number(e.target.value))}
-            />
-          </div>
-
-          <div className="control-group">
-            <label>
-              Network Delay: <span className="value">{networkDelay}ms</span>
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="2000"
-              step="100"
-              value={networkDelay}
-              onChange={(e) => setNetworkDelay(Number(e.target.value))}
-            />
-          </div>
+                <pre className="css-code-box">
+                  {`:root {
+  --fluid-loading-bone-bg: ${boneBg};
+  --fluid-loading-surface-bg: ${surfaceBg};
+  --fluid-loading-shimmer-color: ${hexToRgba(shimmerHex, shimmerOpacity)};
+  --fluid-loading-shimmer-duration: ${shimmerDuration}s;
+  --fluid-loading-radius: ${containerRadius}px;
+  --fluid-loading-text-radius: ${textRadius}px;
+  --fluid-loading-rect-radius: ${rectRadius}px;
+}`}
+                </pre>
+              </div>
+            </>
+          )}
         </aside>
 
         <main className="stage-wrapper">
@@ -335,6 +670,15 @@ export function App(): React.JSX.Element {
                 onStateChange={setFluidState}
                 onInternalStateChange={setInternalState}
                 onSnapshot={setLastSnapshot}
+                style={{
+                  ['--fluid-loading-bone-bg' as string]: boneBg,
+                  ['--fluid-loading-surface-bg' as string]: surfaceBg,
+                  ['--fluid-loading-shimmer-color' as string]: hexToRgba(shimmerHex, shimmerOpacity),
+                  ['--fluid-loading-shimmer-duration' as string]: `${shimmerDuration}s`,
+                  ['--fluid-loading-radius' as string]: `${containerRadius}px`,
+                  ['--fluid-loading-text-radius' as string]: `${textRadius}px`,
+                  ['--fluid-loading-rect-radius' as string]: `${rectRadius}px`,
+                }}
                 errorFallback={
                   <div className="fluid-loading-error-container">
                     <p>Failed to load data. The container surface remained stable.</p>
@@ -525,8 +869,8 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               border: '2px solid rgba(251, 191, 36, 0.3)',
             }}
           />
-          <h2 className="content-card-title" style={{ margin: 0 }}>Sofia Mendes</h2>
-          <p style={{ margin: '0.25rem 0 1rem', color: '#94a3b8', fontSize: '0.9rem' }}>@sofiamendes</p>
+          <h2 className="content-card-title" style={{ margin: 0 }}>John Doe</h2>
+          <p style={{ margin: '0.25rem 0 1rem', color: '#94a3b8', fontSize: '0.9rem' }}>@johndoe</p>
           <p className="content-card-desc" style={{ maxWidth: 400, margin: '0 auto 1.5rem' }}>
             Systems architect & UI engineer. Exploring layout engines and reactive primitives.
           </p>

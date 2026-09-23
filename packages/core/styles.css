@@ -2,6 +2,7 @@
   --fluid-loading-bone-bg: #cbd5e1;
   --fluid-loading-surface-bg: #ffffff;
   --fluid-loading-shimmer-color: rgba(251, 191, 36, 0.25);
+  --fluid-loading-shimmer-duration: 1.5s;
   --fluid-loading-radius: 12px;
   --fluid-loading-text-radius: 5px;
   --fluid-loading-rect-radius: 8px;
@@ -108,7 +109,7 @@
     var(--fluid-loading-shimmer-color) 50%,
     transparent 100%
   );
-  animation: fluid-loading-shimmer-anim 1.5s infinite;
+  animation: fluid-loading-shimmer-anim var(--fluid-loading-shimmer-duration, 1.5s) infinite;
 }
 
 @keyframes fluid-loading-shimmer-anim {

@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
 } from 'react';
+import './styles.css';
 import {
   DEFAULTS,
   FluidLoadingStateMachine,
