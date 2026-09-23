@@ -68,9 +68,6 @@ importers:
 
   playground:
     dependencies:
-      '@fluid-loading/core':
-        specifier: workspace:*
-        version: link:../packages/core
       '@fluid-loading/react':
         specifier: workspace:*
         version: link:../packages/react

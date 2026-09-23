@@ -1,19 +1,27 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FluidLoading } from '@fluid-loading/react';
 import {
+  FluidLoading,
   measureElement,
   serializeSnapshot,
   createSkeletonElement,
   type FluidLoadingState,
   type InternalState,
   type LayoutSnapshot,
-} from '@fluid-loading/core';
+} from '@fluid-loading/react';
 import './playground.css';
 
 type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
 type ContentVariation = 'short' | 'medium' | 'long' | 'error';
 type MotionMode = 'normal' | 'reduced';
 type SidebarTab = 'behavior' | 'styles';
+
+interface BenchmarkResult {
+  nodeCount: number;
+  scanTimeMs: number;
+  boneCount: number;
+  snapshotBytes: number;
+  skeletonDomTimeMs: number;
+}
 
 interface ThemePreset {
   id: string;
