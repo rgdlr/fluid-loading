@@ -20,6 +20,18 @@ import type { FluidLoadingProps } from './types.js';
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+function parseDurationMs(val: unknown): number | undefined {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (trimmed.endsWith('ms')) return parseFloat(trimmed);
+    if (trimmed.endsWith('s')) return parseFloat(trimmed) * 1000;
+    const num = parseFloat(trimmed);
+    return isNaN(num) ? undefined : num;
+  }
+  return undefined;
+}
+
 export function FluidLoading({
   loading,
   error,
@@ -28,6 +40,13 @@ export function FluidLoading({
   duration,
   revealDuration,
   minimumSkeletonDuration,
+  boneBg,
+  surfaceBg,
+  shimmerColor,
+  shimmerDuration,
+  radius,
+  textRadius,
+  rectRadius,
   children,
   fallback,
   errorFallback,
@@ -85,8 +104,16 @@ export function FluidLoading({
 
   const reducedMotion =
     typeof window !== 'undefined' && isReducedMotionPreferred();
+  const styleDuration = parseDurationMs(style?.['--fluid-loading-duration' as keyof React.CSSProperties]);
+  const styleRevealDuration = parseDurationMs(style?.['--fluid-loading-reveal-duration' as keyof React.CSSProperties]);
+  const styleMinSkeleton = parseDurationMs(style?.['--fluid-loading-minimum-skeleton-duration' as keyof React.CSSProperties]);
+
   const timing = resolveTiming(
-    { duration, revealDuration, minimumSkeletonDuration },
+    {
+      duration: duration ?? styleDuration,
+      revealDuration: revealDuration ?? styleRevealDuration,
+      minimumSkeletonDuration: minimumSkeletonDuration ?? styleMinSkeleton,
+    },
     reducedMotion
   );
 
@@ -215,15 +242,42 @@ export function FluidLoading({
     ? (style?.width ?? 'auto')
     : containerWidth;
 
-  const rootStyle: React.CSSProperties = {
+  const rootStyle: React.CSSProperties & Record<string, string | number | undefined> = {
     ...style,
     height: currentHeight,
     width: currentWidth,
     overflow: isReady ? (style?.overflow ?? 'visible') : 'hidden',
     transition: isReady ? 'none' : undefined,
-    ['--fluid-loading-duration' as string]: `${timing.duration}ms`,
-    ['--fluid-loading-reveal-duration' as string]: `${timing.revealDuration}ms`,
   };
+
+  if (boneBg) rootStyle['--fluid-loading-bone-bg' as string] = boneBg;
+  if (surfaceBg) rootStyle['--fluid-loading-surface-bg' as string] = surfaceBg;
+  if (shimmerColor) rootStyle['--fluid-loading-shimmer-color' as string] = shimmerColor;
+  if (shimmerDuration !== undefined) {
+    rootStyle['--fluid-loading-shimmer-duration' as string] =
+      typeof shimmerDuration === 'number' ? `${shimmerDuration}s` : shimmerDuration;
+  }
+  if (radius !== undefined) {
+    rootStyle['--fluid-loading-radius' as string] =
+      typeof radius === 'number' ? `${radius}px` : radius;
+  }
+  if (textRadius !== undefined) {
+    rootStyle['--fluid-loading-text-radius' as string] =
+      typeof textRadius === 'number' ? `${textRadius}px` : textRadius;
+  }
+  if (rectRadius !== undefined) {
+    rootStyle['--fluid-loading-rect-radius' as string] =
+      typeof rectRadius === 'number' ? `${rectRadius}px` : rectRadius;
+  }
+  if (duration !== undefined) {
+    rootStyle['--fluid-loading-duration' as string] = `${timing.duration}ms`;
+  }
+  if (revealDuration !== undefined) {
+    rootStyle['--fluid-loading-reveal-duration' as string] = `${timing.revealDuration}ms`;
+  }
+  if (minimumSkeletonDuration !== undefined) {
+    rootStyle['--fluid-loading-minimum-skeleton-duration' as string] = `${timing.minimumSkeletonDuration}ms`;
+  }
 
   const rootClass = [
     'fluid-loading-root',

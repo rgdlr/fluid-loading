@@ -6,6 +6,16 @@ import { FluidLoading } from '../FluidLoading.js';
 describe('<FluidLoading /> integration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
   });
 
   afterEach(() => {
@@ -220,6 +230,84 @@ describe('<FluidLoading /> integration', () => {
 
     act(() => {
       vi.advanceTimersByTime(16);
+    });
+
+    expect(states).toContain('ready');
+  });
+
+  it('maps styling props to root CSS custom properties', () => {
+    render(
+      <FluidLoading
+        loading={true}
+        boneBg="#333333"
+        surfaceBg="#111111"
+        shimmerColor="rgba(255, 255, 255, 0.5)"
+        shimmerDuration="2s"
+        radius={16}
+        textRadius={6}
+        rectRadius={10}
+      >
+        <div>Content</div>
+      </FluidLoading>
+    );
+
+    const root = document.querySelector('.fluid-loading-root') as HTMLElement;
+    expect(root.style.getPropertyValue('--fluid-loading-bone-bg')).toBe('#333333');
+    expect(root.style.getPropertyValue('--fluid-loading-surface-bg')).toBe('#111111');
+    expect(root.style.getPropertyValue('--fluid-loading-shimmer-color')).toBe('rgba(255, 255, 255, 0.5)');
+    expect(root.style.getPropertyValue('--fluid-loading-shimmer-duration')).toBe('2s');
+    expect(root.style.getPropertyValue('--fluid-loading-radius')).toBe('16px');
+    expect(root.style.getPropertyValue('--fluid-loading-text-radius')).toBe('6px');
+    expect(root.style.getPropertyValue('--fluid-loading-rect-radius')).toBe('10px');
+  });
+
+  it('resolves timing from CSS variables passed via style prop', () => {
+    const states: string[] = [];
+
+    const { rerender } = render(
+      <FluidLoading
+        loading={true}
+        style={{
+          ['--fluid-loading-duration' as string]: '250ms',
+          ['--fluid-loading-reveal-duration' as string]: '100ms',
+          ['--fluid-loading-minimum-skeleton-duration' as string]: '200ms',
+        }}
+        onStateChange={(state) => states.push(state)}
+      >
+        <div>Content</div>
+      </FluidLoading>
+    );
+
+    rerender(
+      <FluidLoading
+        loading={false}
+        style={{
+          ['--fluid-loading-duration' as string]: '250ms',
+          ['--fluid-loading-reveal-duration' as string]: '100ms',
+          ['--fluid-loading-minimum-skeleton-duration' as string]: '200ms',
+        }}
+        onStateChange={(state) => states.push(state)}
+      >
+        <div>Content</div>
+      </FluidLoading>
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(16);
+    });
+    expect(states).toContain('transitioning');
+
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(states).not.toContain('ready');
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(200);
     });
 
     expect(states).toContain('ready');

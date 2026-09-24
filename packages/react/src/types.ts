@@ -9,6 +9,13 @@ export interface FluidLoadingProps {
   duration?: number;
   revealDuration?: number;
   minimumSkeletonDuration?: number;
+  boneBg?: string;
+  surfaceBg?: string;
+  shimmerColor?: string;
+  shimmerDuration?: number | string;
+  radius?: number | string;
+  textRadius?: number | string;
+  rectRadius?: number | string;
   children: ReactNode;
   fallback?: ReactNode;
   errorFallback?: ReactNode | ((props: { error: unknown }) => ReactNode);

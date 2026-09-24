@@ -8,6 +8,7 @@
   --fluid-loading-rect-radius: 8px;
   --fluid-loading-duration: 300ms;
   --fluid-loading-reveal-duration: 150ms;
+  --fluid-loading-minimum-skeleton-duration: 120ms;
 }
 
 @media (prefers-color-scheme: dark) {
