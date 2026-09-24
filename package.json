@@ -16,7 +16,7 @@
     "dev": "pnpm --filter @fluid-loading/landing dev",
     "prepublish:check": "pnpm run typecheck && pnpm test && pnpm -r run build",
     "preview": "pnpm --filter @fluid-loading/landing preview",
-    "publish-packages": "pnpm -r publish --access public",
+    "publish-packages": "changeset publish",
     "test:watch": "vitest",
     "test": "vitest run",
     "typecheck": "pnpm -r run typecheck",
