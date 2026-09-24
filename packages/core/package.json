@@ -3,6 +3,16 @@
   "version": "0.1.0",
   "description": "Core layout measurement and skeleton transition engine for Fluid Loading",
   "license": "MIT",
+  "author": "rgdlr <rodrigrtic@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rgdlr/fluid-loading.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/rgdlr/fluid-loading/issues"
+  },
+  "homepage": "https://github.com/rgdlr/fluid-loading#readme",
   "keywords": [
     "loading",
     "skeleton",
@@ -11,24 +21,46 @@
     "animation",
     "ui"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "sideEffects": [
+    "*.css",
+    "dist/*.css"
+  ],
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
       "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
     "./styles.css": "./dist/styles.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\"",
-    "build": "pnpm run clean && tsc && node -e \"fs.copyFileSync('src/styles.css', 'dist/styles.css')\"",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3"
   }
 }
+
