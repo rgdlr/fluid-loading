@@ -46,13 +46,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck & Test
-        run: |
-          pnpm run typecheck
-          pnpm test
-
       - name: Build packages
         run: pnpm -r run build
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit Tests
+        run: pnpm test
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets

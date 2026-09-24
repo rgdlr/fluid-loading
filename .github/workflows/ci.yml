@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    name: Typecheck, Test & Build
+    name: Build, Typecheck & Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -38,11 +38,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build packages
+        run: pnpm -r run build
+
       - name: Typecheck
         run: pnpm run typecheck
 
       - name: Unit Tests
         run: pnpm test
-
-      - name: Build packages
-        run: pnpm -r run build
