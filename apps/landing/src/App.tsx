@@ -49,7 +49,7 @@ interface TimingPreset {
 const TIMING_PRESETS: TimingPreset[] = [
   {
     id: 'snappy',
-    name: 'Snappy Fast',
+    name: 'Fast',
     icon: '⚡',
     duration: 200,
     revealDuration: 120,
@@ -67,7 +67,7 @@ const TIMING_PRESETS: TimingPreset[] = [
   },
   {
     id: 'slow',
-    name: 'Slow Motion',
+    name: 'Slow',
     icon: '🐢',
     duration: 1000,
     revealDuration: 400,
@@ -79,7 +79,7 @@ const TIMING_PRESETS: TimingPreset[] = [
 const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'amber',
-    name: 'Amber Glow',
+    name: 'Amber',
     boneBg: '#353d4f',
     surfaceBg: '#1c202b',
     shimmerHex: '#fbbf24',
@@ -91,7 +91,7 @@ const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: 'slate',
-    name: 'Slate Minimal',
+    name: 'Slate',
     boneBg: '#272f3d',
     surfaceBg: '#0f172a',
     shimmerHex: '#94a3b8',
@@ -103,7 +103,7 @@ const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: 'violet',
-    name: 'Cyberpunk Violet',
+    name: 'Violet',
     boneBg: '#2d1b4e',
     surfaceBg: '#130924',
     shimmerHex: '#e879f9',
@@ -115,7 +115,7 @@ const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: 'emerald',
-    name: 'Emerald Matrix',
+    name: 'Emerald',
     boneBg: '#063828',
     surfaceBg: '#021e15',
     shimmerHex: '#34d399',
@@ -127,7 +127,7 @@ const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: 'crimson',
-    name: 'Crimson Rose',
+    name: 'Rose',
     boneBg: '#3a1d28',
     surfaceBg: '#1a0c14',
     shimmerHex: '#fb7185',
@@ -139,7 +139,7 @@ const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: 'nordic',
-    name: 'Nordic Frost',
+    name: 'Frost',
     boneBg: '#1e293b',
     surfaceBg: '#0b1324',
     shimmerHex: '#38bdf8',
@@ -292,25 +292,34 @@ export function App(): React.JSX.Element {
   const getCssVariablesCode = () => {
     const shimmerColor = hexToRgba(shimmerHex, shimmerOpacity);
     return `:root {
-  --fluid-loading-duration: ${motionMode === 'reduced' ? '0ms' : `${duration}ms`};
-  --fluid-loading-reveal-duration: ${motionMode === 'reduced' ? '0ms' : `${revealDuration}ms`};
-  --fluid-loading-shimmer-duration: ${shimmerDuration}s;
-  --fluid-loading-radius: ${containerRadius}px;
-  --fluid-loading-text-radius: ${textRadius}px;
-  --fluid-loading-rect-radius: ${rectRadius}px;
-  --fluid-loading-surface-bg: ${surfaceBg};
   --fluid-loading-bone-bg: ${boneBg};
+  --fluid-loading-duration: ${motionMode === 'reduced' ? '0ms' : `${duration}ms`};
+  --fluid-loading-minimum-skeleton-duration: ${motionMode === 'reduced' ? '0ms' : `${minimumSkeletonDuration}ms`};
+  --fluid-loading-radius: ${containerRadius}px;
+  --fluid-loading-rect-radius: ${rectRadius}px;
+  --fluid-loading-reveal-duration: ${motionMode === 'reduced' ? '0ms' : `${revealDuration}ms`};
   --fluid-loading-shimmer-color: ${shimmerColor};
+  --fluid-loading-shimmer-duration: ${shimmerDuration}s;
+  --fluid-loading-surface-bg: ${surfaceBg};
+  --fluid-loading-text-radius: ${textRadius}px;
 }`;
   };
 
   const getReactUsageCode = () => {
+    const shimmerColor = hexToRgba(shimmerHex, shimmerOpacity);
     return `<FluidLoading
   loading={loading}
   estimatedHeight={${estimatedHeight}}
+  boneBg="${boneBg}"
   duration={${motionMode === 'reduced' ? 0 : duration}}
-  revealDuration={${motionMode === 'reduced' ? 0 : revealDuration}}
   minimumSkeletonDuration={${motionMode === 'reduced' ? 0 : minimumSkeletonDuration}}
+  radius={${containerRadius}}
+  rectRadius={${rectRadius}}
+  revealDuration={${motionMode === 'reduced' ? 0 : revealDuration}}
+  shimmerColor="${shimmerColor}"
+  shimmerDuration="${shimmerDuration}s"
+  surfaceBg="${surfaceBg}"
+  textRadius={${textRadius}}
 >
   <YourContent />
 </FluidLoading>`;
@@ -495,19 +504,19 @@ export function UserCard({ user, loading, error }) {
           <div className="hero-highlights-grid">
             <div className="highlight-card">
               <span className="highlight-value">0.00</span>
-              <span className="highlight-label">Cumulative Layout Shift</span>
+              <span className="highlight-label">CLS</span>
             </div>
             <div className="highlight-card">
               <span className="highlight-value">&lt; 1ms</span>
-              <span className="highlight-label">Measurement Overhead</span>
+              <span className="highlight-label">Overhead</span>
             </div>
             <div className="highlight-card">
               <span className="highlight-value">Zero-Config</span>
-              <span className="highlight-label">Styles Bundled in React</span>
+              <span className="highlight-label">Styles Bundled</span>
             </div>
             <div className="highlight-card">
               <span className="highlight-value">100%</span>
-              <span className="highlight-label">Accessible &amp; Reduced-Motion</span>
+              <span className="highlight-label">Accessible</span>
             </div>
           </div>
         </section>
@@ -607,18 +616,16 @@ export function UserCard({ user, loading, error }) {
                     duration={motionMode === 'reduced' ? 0 : duration}
                     revealDuration={motionMode === 'reduced' ? 0 : revealDuration}
                     minimumSkeletonDuration={motionMode === 'reduced' ? 0 : minimumSkeletonDuration}
+                    boneBg={boneBg}
+                    surfaceBg={surfaceBg}
+                    shimmerColor={hexToRgba(shimmerHex, shimmerOpacity)}
+                    shimmerDuration={`${shimmerDuration}s`}
+                    radius={containerRadius}
+                    textRadius={textRadius}
+                    rectRadius={rectRadius}
                     onStateChange={setFluidState}
                     onInternalStateChange={setInternalState}
                     onSnapshot={setLastSnapshot}
-                    style={{
-                      ['--fluid-loading-bone-bg' as string]: boneBg,
-                      ['--fluid-loading-surface-bg' as string]: surfaceBg,
-                      ['--fluid-loading-shimmer-color' as string]: hexToRgba(shimmerHex, shimmerOpacity),
-                      ['--fluid-loading-shimmer-duration' as string]: `${shimmerDuration}s`,
-                      ['--fluid-loading-radius' as string]: `${containerRadius}px`,
-                      ['--fluid-loading-text-radius' as string]: `${textRadius}px`,
-                      ['--fluid-loading-rect-radius' as string]: `${rectRadius}px`,
-                    }}
                     errorFallback={
                       <div className="fluid-loading-error-container">
                         <p>Failed to load data. The container surface remained stable.</p>
@@ -1098,7 +1105,7 @@ export function UserCard({ user, loading, error }) {
           <div className="features-trio">
             <div className="feature-mini-card">
               <span className="feature-mini-icon">🛡️</span>
-              <h3 className="feature-mini-title">Zero Layout Shifts (0.00 CLS)</h3>
+              <h3 className="feature-mini-title">Zero Layout Shifts</h3>
               <p className="feature-mini-desc">
                 By measuring actual rendered DOM geometry before reveal and animating container dimensions, content never abruptly shifts existing layout elements.
               </p>
@@ -1108,13 +1115,13 @@ export function UserCard({ user, loading, error }) {
               <span className="feature-mini-icon">♿</span>
               <h3 className="feature-mini-title">Accessible by Default</h3>
               <p className="feature-mini-desc">
-                Automatically manages aria-busy, marks skeletons with aria-hidden, and detects @media (prefers-reduced-motion) to transition instantly without animation.
+                Automatically manages aria-busy, marks skeletons with aria-hidden, and detects reduced motion preference to transition instantly without animation.
               </p>
             </div>
 
             <div className="feature-mini-card">
               <span className="feature-mini-icon">🎨</span>
-              <h3 className="feature-mini-title">Zero CSS Dependencies</h3>
+              <h3 className="feature-mini-title">Zero Dependencies</h3>
               <p className="feature-mini-desc">
                 Styles are bundled directly into @fluid-loading/react with no extra CSS imports required. Easily theme via CSS custom properties (--fluid-loading-*).
               </p>
