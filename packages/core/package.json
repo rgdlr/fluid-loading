@@ -1,6 +1,6 @@
 {
   "name": "@fluid-loading/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core layout measurement and skeleton transition engine for Fluid Loading",
   "license": "MIT",
   "author": "rgdlr <rodrigrtic@gmail.com>",
