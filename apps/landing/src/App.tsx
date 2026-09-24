@@ -11,7 +11,16 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './landing.css';
 
-type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
+type ContentType =
+  | 'card'
+  | 'article'
+  | 'profile'
+  | 'dashboard'
+  | 'product'
+  | 'table'
+  | 'margins'
+  | 'list'
+  | 'bento';
 type ContentVariation = 'short' | 'medium' | 'long' | 'error';
 type MotionMode = 'normal' | 'reduced';
 type SidebarTab = 'behavior' | 'styles';
@@ -185,7 +194,7 @@ export function App(): React.JSX.Element {
   const [exportTab, setExportTab] = useState<'css' | 'react'>('css');
   const [copiedCode, setCopiedCode] = useState(false);
 
-  const [fluidState, setFluidState] = useState<FluidLoadingState>('loading');
+  const [_fluidState, setFluidState] = useState<FluidLoadingState>('loading');
   const [internalState, setInternalState] = useState<InternalState>('loading');
   const [lastSnapshot, setLastSnapshot] = useState<LayoutSnapshot | null>(null);
 
@@ -570,11 +579,23 @@ export function UserCard({ user, loading, error }) {
 
           <div className="sandbox-workbench">
             <div className="workbench-toolbar">
-              <div className="workbench-toolbar-left">
-                <div className="workbench-control-field">
+              <div className="workbench-toolbar-main">
+                <div className="workbench-control-field workbench-control-layout">
                   <span className="workbench-field-label">Layout:</span>
                   <div className="segmented-control compact">
-                    {(['card', 'article', 'profile', 'dashboard'] as ContentType[]).map((type) => (
+                    {(
+                      [
+                        'card',
+                        'article',
+                        'profile',
+                        'dashboard',
+                        'product',
+                        'table',
+                        'margins',
+                        'list',
+                        'bento',
+                      ] as ContentType[]
+                    ).map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -587,45 +608,101 @@ export function UserCard({ user, loading, error }) {
                   </div>
                 </div>
 
-                <div className="workbench-control-field">
-                  <span className="workbench-field-label">Size:</span>
-                  <div className="segmented-control compact">
-                    {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
-                      <button
-                        key={v}
-                        type="button"
-                        className={`segmented-button ${variation === v ? 'active' : ''}`}
-                        onClick={() => handleVariationChange(v)}
-                      >
-                        {v}
-                      </button>
-                    ))}
+                <div className="workbench-controls-subgroup">
+                  <div className="workbench-control-field">
+                    <span className="workbench-field-label">Size:</span>
+                    <div className="segmented-control compact">
+                      {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          className={`segmented-button ${variation === v ? 'active' : ''}`}
+                          onClick={() => handleVariationChange(v)}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="workbench-control-field">
+                    <span className="workbench-field-label">Delay:</span>
+                    <div className="segmented-control compact">
+                      {([0, 350, 600, 1200] as const).map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          className={`segmented-button ${networkDelay === d ? 'active' : ''}`}
+                          onClick={() => {
+                            setNetworkDelay(d);
+                            if (timerRef.current) {
+                              window.clearTimeout(timerRef.current);
+                            }
+                            setLoading(true);
+                            setFluidState('loading');
+                            setInternalState('loading');
+                            timerRef.current = window.setTimeout(() => {
+                              setLoading(false);
+                            }, d);
+                          }}
+                        >
+                          {d === 0 ? '0ms' : d < 1000 ? `${d}ms` : `${(d / 1000).toFixed(1)}s`}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="workbench-toolbar-reset-btn"
-                onClick={resetAll}
-                title="Reset all settings to default"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+              <div className="workbench-toolbar-actions">
+                <button
+                  type="button"
+                  className="workbench-toolbar-reload-btn"
+                  onClick={triggerLoad}
+                  title="Trigger loading and transition cycle"
                 >
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                  <path d="M3 3v5h5" />
-                </svg>
-                <span>Reset All</span>
-              </button>
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M21 3v5h-5" />
+                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                    <path d="M16 21h5v-5" />
+                  </svg>
+                  <span>Reload</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="workbench-toolbar-reset-btn"
+                  onClick={resetAll}
+                  title="Reset all settings to default"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                  </svg>
+                  <span>Reset All</span>
+                </button>
+              </div>
             </div>
 
             <div className="workbench-body">
@@ -639,30 +716,14 @@ export function UserCard({ user, loading, error }) {
                   </div>
 
                   <div className="stage-action-bar-right">
-                    <button
-                      type="button"
-                      className="workbench-action-btn reload-btn"
-                      onClick={triggerLoad}
-                      title="Trigger loading and transition cycle"
-                    >
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                        <path d="M3 3v5h5" />
-                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                        <path d="M16 21h5v-5" />
-                      </svg>
-                      <span>Reload</span>
-                    </button>
+                    {lastSnapshot && (
+                      <div className="workbench-info-chip" title="Detected bones count">
+                        <span>{lastSnapshot.bones.length} bones</span>
+                      </div>
+                    )}
+                    <div className="workbench-info-chip" title="Simulated network latency">
+                      <span>{networkDelay}ms delay</span>
+                    </div>
                   </div>
                 </div>
                 <div className="stage-canvas-ambient" />
@@ -681,13 +742,14 @@ export function UserCard({ user, loading, error }) {
                     radius={containerRadius}
                     textRadius={textRadius}
                     rectRadius={rectRadius}
+                    style={{ width: '100%' }}
                     onStateChange={setFluidState}
                     onInternalStateChange={setInternalState}
                     onSnapshot={setLastSnapshot}
                     errorFallback={
                       <div className="fluid-loading-error-container">
                         <p>Failed to load data. The container surface remained stable.</p>
-                        <button className="content-card-action" onClick={triggerLoad}>
+                        <button type="button" className="content-card-action" onClick={triggerLoad}>
                           Retry
                         </button>
                       </div>
@@ -832,23 +894,6 @@ export function UserCard({ user, loading, error }) {
                           onChange={(e) => {
                             setSelectedTimingPreset('custom');
                             setRevealDuration(Number(e.target.value));
-                          }}
-                        />
-                      </div>
-
-                      <div className="control-group">
-                        <label>
-                          Simulated Delay <span className="value">{networkDelay}ms</span>
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="2000"
-                          step="100"
-                          value={networkDelay}
-                          onChange={(e) => {
-                            setSelectedTimingPreset('custom');
-                            setNetworkDelay(Number(e.target.value));
                           }}
                         />
                       </div>
@@ -1308,7 +1353,9 @@ function renderContent(type: ContentType, variation: ContentVariation) {
                 </>
               )}
             </p>
-            <button className="content-card-action">Read Documentation</button>
+            <button type="button" className="content-card-action">
+              Read Documentation
+            </button>
           </div>
         </div>
       );
@@ -1327,7 +1374,7 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               data-fluid-loading-type="circle"
             />
             <div>
-              <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#f8fafc' }}>Elena Rostova</h3>
+              <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#f8fafc' }}>John Doe</h3>
               <small style={{ color: '#64748b' }}>Published 2 hours ago</small>
             </div>
           </div>
@@ -1403,13 +1450,18 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               </div>
             </div>
           )}
-          <button className="content-card-action">Follow Profile</button>
+          <button type="button" className="content-card-action">
+            Follow Profile
+          </button>
         </div>
       );
 
     case 'dashboard':
       return (
-        <div className="content-card" style={{ padding: '1.5rem' }}>
+        <div
+          className="content-card"
+          style={{ padding: '1.5rem', width: '100%', boxSizing: 'border-box' }}
+        >
           <div
             style={{
               display: 'flex',
@@ -1451,6 +1503,990 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               <span>Mar: $32k</span>
             </div>
           )}
+        </div>
+      );
+
+    case 'product':
+      return (
+        <div className="content-card" style={{ width: '100%', boxSizing: 'border-box' }}>
+          <div
+            data-fluid-loading-type="rect"
+            style={{
+              height: variation === 'short' ? 140 : 180,
+              background:
+                'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.08) 100%)',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            <span
+              style={{
+                position: 'absolute',
+                top: 12,
+                left: 12,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: '#fbbf24',
+                background: 'rgba(245, 158, 11, 0.15)',
+                padding: '0.2rem 0.6rem',
+                borderRadius: 9999,
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+              }}
+            >
+              Best Seller
+            </span>
+            <span style={{ fontSize: '3rem' }}>🎧</span>
+          </div>
+          <div style={{ padding: '1.5rem' }}>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: '#f59e0b',
+                fontWeight: 600,
+              }}
+            >
+              Audio & Acoustics
+            </span>
+            <h3
+              className="content-card-title"
+              style={{ margin: '0.4rem 0 0.5rem', fontSize: '1.25rem' }}
+            >
+              AeroPulse Wireless Studio Pro
+            </h3>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem',
+                fontSize: '0.85rem',
+              }}
+            >
+              <span style={{ color: '#fbbf24' }}>★★★★★</span>
+              <span style={{ color: '#94a3b8' }}>4.9 (1,248 reviews)</span>
+            </div>
+            {variation !== 'short' && (
+              <p
+                className="content-card-desc"
+                style={{ marginBottom: '1rem', fontSize: '0.875rem' }}
+              >
+                Adaptive spatial audio with custom 40mm beryllium drivers and 38-hour ultra-low
+                latency battery life.
+              </p>
+            )}
+            {variation === 'long' && (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  alignItems: 'center',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Finishes:</span>
+                <span
+                  data-fluid-loading-type="circle"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#0f172a',
+                    border: '2px solid #fbbf24',
+                    display: 'inline-block',
+                  }}
+                />
+                <span
+                  data-fluid-loading-type="circle"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#94a3b8',
+                    display: 'inline-block',
+                  }}
+                />
+                <span
+                  data-fluid-loading-type="circle"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: '#d97706',
+                    display: 'inline-block',
+                  }}
+                />
+              </div>
+            )}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: '1rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc' }}>$289</span>
+                <span
+                  style={{ fontSize: '0.9rem', color: '#64748b', textDecoration: 'line-through' }}
+                >
+                  $349
+                </span>
+              </div>
+              <button
+                type="button"
+                className="content-card-action"
+                style={{ margin: 0, padding: '0.5rem 1.25rem', width: 'auto' }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'table':
+      return (
+        <div
+          className="content-card"
+          style={{ padding: '1.5rem', width: '100%', boxSizing: 'border-box' }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1.25rem',
+            }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                Recent Transactions
+              </h3>
+              <small style={{ color: '#64748b' }}>Real-time treasury stream</small>
+            </div>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: '#10b981',
+                background: 'rgba(16, 185, 129, 0.12)',
+                padding: '0.25rem 0.6rem',
+                borderRadius: 9999,
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                fontWeight: 600,
+              }}
+            >
+              Live Sync
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  data-fluid-loading-type="circle"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(245, 158, 11, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.9rem',
+                    color: '#fbbf24',
+                    fontWeight: 700,
+                  }}
+                >
+                  S
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+                    Stripe Payout
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Today, 14:32</div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#10b981' }}>
+                  +$4,820.00
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Completed</div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  data-fluid-loading-type="circle"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: 'rgba(148, 163, 184, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.9rem',
+                    color: '#94a3b8',
+                    fontWeight: 700,
+                  }}
+                >
+                  G
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+                    GitHub Enterprise
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Yesterday, 09:15</div>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
+                  -$210.00
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Completed</div>
+              </div>
+            </div>
+
+            {variation !== 'short' && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingBottom: '0.75rem',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div
+                    data-fluid-loading-type="circle"
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.9rem',
+                      color: '#f87171',
+                      fontWeight: 700,
+                    }}
+                  >
+                    A
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+                      AWS Cloud Infrastructure
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Sep 22, 18:40</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fbbf24' }}>
+                    -$1,420.50
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#fbbf24' }}>Processing</div>
+                </div>
+              </div>
+            )}
+
+            {variation === 'long' && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingBottom: '0.75rem',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div
+                    data-fluid-loading-type="circle"
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: 'rgba(59, 130, 246, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.9rem',
+                      color: '#60a5fa',
+                      fontWeight: 700,
+                    }}
+                  >
+                    F
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#f8fafc' }}>
+                      Figma Organization
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Sep 20, 11:22</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
+                    -$180.00
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Completed</div>
+                </div>
+              </div>
+            )}
+          </div>
+          <button type="button" className="content-card-action" style={{ marginTop: '1.25rem' }}>
+            Export Full Statement
+          </button>
+        </div>
+      );
+
+    case 'margins':
+      return (
+        <div
+          className="content-card"
+          style={{ width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}
+        >
+          <div
+            data-fluid-loading-type="rect"
+            style={{
+              height: 120,
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #0f172a 100%)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          />
+
+          <div style={{ padding: '0 1.5rem 1.5rem', position: 'relative', zIndex: 2 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '0.75rem',
+              }}
+            >
+              <div
+                data-fluid-loading-type="circle"
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #d97706 100%)',
+                  border: '4px solid #141721',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.5)',
+                  marginTop: '-42px',
+                  position: 'relative',
+                  zIndex: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2rem',
+                  flexShrink: 0,
+                }}
+              >
+                👨‍🔬
+              </div>
+              <div style={{ paddingTop: '0.85rem' }}>
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: '#38bdf8',
+                    background: 'rgba(56, 189, 248, 0.12)',
+                    padding: '0.3rem 0.75rem',
+                    borderRadius: 9999,
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  Negative Margin (-42px)
+                </span>
+              </div>
+            </div>
+
+            <h2
+              className="content-card-title"
+              style={{ margin: '0.5rem 0 0.25rem', fontSize: '1.3rem' }}
+            >
+              Dr. Marcus Vance
+            </h2>
+            <p style={{ margin: '0.25rem 0 1rem', color: '#94a3b8', fontSize: '0.85rem' }}>
+              Staff Performance Engineer • @marcusvance
+            </p>
+
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                borderRadius: 8,
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                margin: '1rem 0',
+              }}
+            >
+              <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>
+                Margin Collapsing Context
+              </div>
+              <p
+                style={{
+                  margin: '0.25rem 0 0.5rem',
+                  fontSize: '0.85rem',
+                  lineHeight: 1.5,
+                  color: '#cbd5e1',
+                }}
+              >
+                In standard CSS, adjacent vertical margins collapse into max(m1, m2). FluidLoading
+                uses real DOM surface bounding boxes, automatically resolving exact collapsed
+                geometry.
+              </p>
+            </div>
+
+            {variation !== 'short' && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  margin: '1rem 0',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Asymmetric Offsets:</span>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: 4,
+                    background: 'rgba(245, 158, 11, 0.1)',
+                    color: '#fbbf24',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                  }}
+                >
+                  margin-top: -40px
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: 4,
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    color: '#34d399',
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                  }}
+                >
+                  margin-left: auto
+                </span>
+              </div>
+            )}
+
+            {variation === 'long' && (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  margin: '1.25rem 0',
+                }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    borderRadius: 8,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc' }}>
+                    0.00ms
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Shift Jitter</div>
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    borderRadius: 8,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#10b981' }}>100%</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>BFC Contained</div>
+                </div>
+              </div>
+            )}
+
+            <button type="button" className="content-card-action" style={{ marginTop: '0.75rem' }}>
+              Verify Margin Coordinates
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'list': {
+      const listItems = [
+        {
+          id: 1,
+          name: 'Sarah Connor',
+          tag: 'core-runtime',
+          status: 'Merged',
+          time: '5m ago',
+          badgeColor: '#10b981',
+          avatarLetter: 'S',
+          avatarBg: '#065f46',
+        },
+        {
+          id: 2,
+          name: 'David Heinemeier',
+          tag: 'zero-cls',
+          status: 'Review',
+          time: '18m ago',
+          badgeColor: '#f59e0b',
+          avatarLetter: 'D',
+          avatarBg: '#78350f',
+        },
+        {
+          id: 3,
+          name: 'Alexandre Russell',
+          tag: 'ssr-hydration',
+          status: 'Running',
+          time: '42m ago',
+          badgeColor: '#3b82f6',
+          avatarLetter: 'A',
+          avatarBg: '#1e3a8a',
+        },
+        {
+          id: 4,
+          name: 'Elena Rostova',
+          tag: 'morph-engine',
+          status: 'Merged',
+          time: '1h ago',
+          badgeColor: '#10b981',
+          avatarLetter: 'E',
+          avatarBg: '#065f46',
+        },
+        {
+          id: 5,
+          name: 'Liam Chen',
+          tag: 'preact-adapter',
+          status: 'Review',
+          time: '2h ago',
+          badgeColor: '#f59e0b',
+          avatarLetter: 'L',
+          avatarBg: '#78350f',
+        },
+        {
+          id: 6,
+          name: 'Maya Patel',
+          tag: 'benchmarking',
+          status: 'Merged',
+          time: '3h ago',
+          badgeColor: '#10b981',
+          avatarLetter: 'M',
+          avatarBg: '#065f46',
+        },
+        {
+          id: 7,
+          name: 'Tamas Szabo',
+          tag: 'layout-engine',
+          status: 'Running',
+          time: '4h ago',
+          badgeColor: '#3b82f6',
+          avatarLetter: 'T',
+          avatarBg: '#1e3a8a',
+        },
+        {
+          id: 8,
+          name: 'Chloe Dubois',
+          tag: 'security-audit',
+          status: 'Merged',
+          time: '5h ago',
+          badgeColor: '#10b981',
+          avatarLetter: 'C',
+          avatarBg: '#065f46',
+        },
+      ];
+
+      const visibleListItems =
+        variation === 'short'
+          ? listItems.slice(0, 3)
+          : variation === 'medium'
+            ? listItems.slice(0, 5)
+            : listItems;
+
+      const chips = [
+        'All Events',
+        'Core Engine',
+        'Adapters',
+        'Performance',
+        'Zero-CLS',
+        'Security',
+        'Docs',
+      ];
+
+      return (
+        <div
+          className="content-card"
+          style={{ padding: '1.5rem', width: '100%', boxSizing: 'border-box' }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+            }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                Engineering Activity
+              </h3>
+              <small style={{ color: '#64748b' }}>
+                Dynamic list • {visibleListItems.length} active threads
+              </small>
+            </div>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: '#38bdf8',
+                background: 'rgba(56, 189, 248, 0.12)',
+                padding: '0.25rem 0.6rem',
+                borderRadius: 9999,
+                border: '1px solid rgba(56, 189, 248, 0.25)',
+                fontWeight: 600,
+              }}
+            >
+              Live Feed
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '6px',
+              marginBottom: '1.25rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+            }}
+          >
+            {chips.map((chip, idx) => (
+              <span
+                key={chip}
+                style={{
+                  fontSize: '0.72rem',
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: 6,
+                  background: idx === 0 ? '#f59e0b' : 'rgba(255, 255, 255, 0.05)',
+                  color: idx === 0 ? '#000000' : '#94a3b8',
+                  fontWeight: idx === 0 ? 600 : 400,
+                  border: idx === 0 ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {visibleListItems.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: 8,
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div
+                    data-fluid-loading-type="circle"
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: '50%',
+                      background: item.avatarBg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      color: '#ffffff',
+                    }}
+                  >
+                    {item.avatarLetter}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f8fafc' }}>
+                      {item.name}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                      #{item.tag} • {item.time}
+                    </div>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    color: item.badgeColor,
+                    background: `${item.badgeColor}18`,
+                    border: `1px solid ${item.badgeColor}33`,
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: 9999,
+                    fontWeight: 600,
+                  }}
+                >
+                  {item.status}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <button type="button" className="content-card-action" style={{ marginTop: '1.25rem' }}>
+            Load Next Batch
+          </button>
+        </div>
+      );
+    }
+
+    case 'bento':
+      return (
+        <div
+          className="content-card"
+          style={{ padding: '1.5rem', width: '100%', boxSizing: 'border-box' }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+            }}
+          >
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#f8fafc' }}>
+                Bento Grid Telemetry
+              </h3>
+              <small style={{ color: '#64748b' }}>Asymmetric 2D grid measuring</small>
+            </div>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: '#fbbf24',
+                background: 'rgba(245, 158, 11, 0.12)',
+                padding: '0.25rem 0.6rem',
+                borderRadius: 9999,
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                fontWeight: 600,
+              }}
+            >
+              2D Layout
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                gridColumn: 'span 2',
+                padding: '1rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 10,
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                CLS Score Stability
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>0.000</div>
+              <div
+                data-fluid-loading-type="rect"
+                style={{
+                  height: 40,
+                  marginTop: '0.5rem',
+                  background:
+                    'linear-gradient(90deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                  borderRadius: 6,
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                }}
+              />
+            </div>
+
+            <div
+              style={{
+                gridColumn: 'span 1',
+                padding: '1rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 10,
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                data-fluid-loading-type="circle"
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  border: '3px solid #fbbf24',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: '#fbbf24',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                99%
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Speed Index</div>
+            </div>
+
+            <div
+              style={{
+                gridColumn: 'span 1',
+                padding: '0.85rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 10,
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Bundle</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc' }}>3.2 kB</div>
+              <div style={{ fontSize: '0.68rem', color: '#10b981' }}>gzip minified</div>
+            </div>
+
+            <div
+              style={{
+                gridColumn: 'span 1',
+                padding: '0.85rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 10,
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Dropped</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc' }}>0 fps</div>
+              <div style={{ fontSize: '0.68rem', color: '#38bdf8' }}>60 fps smooth</div>
+            </div>
+
+            <div
+              style={{
+                gridColumn: 'span 1',
+                padding: '0.85rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: 10,
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+              }}
+            >
+              <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Heap delta</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#f8fafc' }}>+120 B</div>
+              <div style={{ fontSize: '0.68rem', color: '#a855f7' }}>zero leak</div>
+            </div>
+
+            {variation !== 'short' && (
+              <div
+                style={{
+                  gridColumn: 'span 3',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: 10,
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc' }}>
+                    Multi-Framework Tree
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    Core engine runs framework-agnostic
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.5rem',
+                      background: 'rgba(97, 218, 251, 0.1)',
+                      color: '#61dafb',
+                      borderRadius: 6,
+                    }}
+                  >
+                    React
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.5rem',
+                      background: 'rgba(65, 184, 131, 0.1)',
+                      color: '#41b883',
+                      borderRadius: 6,
+                    }}
+                  >
+                    Vue
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '0.2rem 0.5rem',
+                      background: 'rgba(78, 140, 203, 0.1)',
+                      color: '#4e8ccb',
+                      borderRadius: 6,
+                    }}
+                  >
+                    Solid
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button type="button" className="content-card-action" style={{ marginTop: '1.25rem' }}>
+            Inspect Bento Grid Metrics
+          </button>
         </div>
       );
   }
