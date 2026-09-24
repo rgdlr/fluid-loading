@@ -20,7 +20,7 @@ function parseDurationMs(val: unknown): number | undefined {
     if (trimmed.endsWith('ms')) return parseFloat(trimmed);
     if (trimmed.endsWith('s')) return parseFloat(trimmed) * 1000;
     const num = parseFloat(trimmed);
-    return isNaN(num) ? undefined : num;
+    return Number.isNaN(num) ? undefined : num;
   }
   return undefined;
 }
@@ -233,7 +233,8 @@ export function FluidLoading({
   const currentWidth = loading
     ? estimatedWidth
     : isReady
-      ? (style?.width ?? 'auto')
+      ? (style?.width ??
+        (typeof estimatedWidth === 'number' ? estimatedWidth : (estimatedWidth ?? '100%')))
       : containerWidth;
 
   const rootStyle: React.CSSProperties & Record<string, string | number | undefined> = {

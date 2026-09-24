@@ -23,6 +23,7 @@
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
+  width: 100%;
   transition:
     height var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1),
     width var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1);
@@ -59,6 +60,7 @@
 }
 
 .fluid-loading-content {
+  display: flow-root;
   box-sizing: border-box;
   transition: opacity var(--fluid-loading-reveal-duration) ease-in-out;
 }

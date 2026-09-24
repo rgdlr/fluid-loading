@@ -145,4 +145,155 @@ describe('measureElement', () => {
 
     document.body.removeChild(root);
   });
+
+  it('handles overlapping elements and negative offset layouts (e.g. avatar overlapping banner)', () => {
+    const root = document.createElement('div');
+    setMockRect(root, { left: 50, top: 50, width: 400, height: 300 });
+
+    const banner = document.createElement('div');
+    banner.setAttribute('data-fluid-loading-type', 'rect');
+    setMockRect(banner, { left: 50, top: 50, width: 400, height: 120 });
+    root.appendChild(banner);
+
+    const avatar = document.createElement('div');
+    avatar.setAttribute('data-fluid-loading-type', 'circle');
+    avatar.style.borderRadius = '50%';
+    setMockRect(avatar, { left: 80, top: 130, width: 64, height: 64 });
+    root.appendChild(avatar);
+
+    document.body.appendChild(root);
+
+    const snapshot = measureElement(root);
+    expect(snapshot.bones).toHaveLength(2);
+
+    expect(snapshot.bones[0]).toEqual({
+      type: 'rect',
+      x: 0,
+      y: 0,
+      width: 400,
+      height: 120,
+    });
+
+    expect(snapshot.bones[1]).toEqual({
+      type: 'circle',
+      x: 30,
+      y: 80,
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+    });
+
+    document.body.removeChild(root);
+  });
+
+  it('accurately captures repeated list items with sequential vertical positions', () => {
+    const root = document.createElement('div');
+    setMockRect(root, { left: 0, top: 0, width: 350, height: 400 });
+
+    for (let i = 0; i < 4; i++) {
+      const row = document.createElement('div');
+      const rowTop = 20 + i * 80;
+
+      const icon = document.createElement('div');
+      icon.setAttribute('data-fluid-loading-type', 'circle');
+      setMockRect(icon, { left: 16, top: rowTop, width: 40, height: 40 });
+      row.appendChild(icon);
+
+      const title = document.createElement('p');
+      title.textContent = `Item ${i + 1}`;
+      setMockRect(title, { left: 68, top: rowTop + 8, width: 180, height: 20 });
+      row.appendChild(title);
+
+      root.appendChild(row);
+    }
+
+    document.body.appendChild(root);
+
+    const snapshot = measureElement(root);
+    expect(snapshot.bones).toHaveLength(8);
+
+    expect(snapshot.bones[0]).toMatchObject({
+      type: 'circle',
+      x: 16,
+      y: 20,
+      width: 40,
+      height: 40,
+    });
+    expect(snapshot.bones[1]).toMatchObject({ type: 'text', x: 68, y: 28, width: 180, height: 20 });
+
+    expect(snapshot.bones[2]).toMatchObject({
+      type: 'circle',
+      x: 16,
+      y: 100,
+      width: 40,
+      height: 40,
+    });
+    expect(snapshot.bones[3]).toMatchObject({
+      type: 'text',
+      x: 68,
+      y: 108,
+      width: 180,
+      height: 20,
+    });
+
+    expect(snapshot.bones[4]).toMatchObject({
+      type: 'circle',
+      x: 16,
+      y: 180,
+      width: 40,
+      height: 40,
+    });
+    expect(snapshot.bones[6]).toMatchObject({
+      type: 'circle',
+      x: 16,
+      y: 260,
+      width: 40,
+      height: 40,
+    });
+
+    document.body.removeChild(root);
+  });
+
+  it('accurately measures multi-column 2D grid items with distinct spans', () => {
+    const root = document.createElement('div');
+    setMockRect(root, { left: 100, top: 100, width: 600, height: 400 });
+
+    const cardA = document.createElement('div');
+    cardA.setAttribute('data-fluid-loading-type', 'rect');
+    setMockRect(cardA, { left: 100, top: 100, width: 380, height: 180 });
+    root.appendChild(cardA);
+
+    const cardB = document.createElement('div');
+    cardB.setAttribute('data-fluid-loading-type', 'rect');
+    setMockRect(cardB, { left: 500, top: 100, width: 200, height: 180 });
+    root.appendChild(cardB);
+
+    const cardC = document.createElement('div');
+    cardC.setAttribute('data-fluid-loading-type', 'rect');
+    setMockRect(cardC, { left: 100, top: 300, width: 600, height: 100 });
+    root.appendChild(cardC);
+
+    document.body.appendChild(root);
+
+    const snapshot = measureElement(root);
+    expect(snapshot.bones).toHaveLength(3);
+
+    expect(snapshot.bones[0]).toMatchObject({ type: 'rect', x: 0, y: 0, width: 380, height: 180 });
+    expect(snapshot.bones[1]).toMatchObject({
+      type: 'rect',
+      x: 400,
+      y: 0,
+      width: 200,
+      height: 180,
+    });
+    expect(snapshot.bones[2]).toMatchObject({
+      type: 'rect',
+      x: 0,
+      y: 200,
+      width: 600,
+      height: 100,
+    });
+
+    document.body.removeChild(root);
+  });
 });

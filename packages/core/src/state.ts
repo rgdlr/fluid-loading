@@ -55,7 +55,7 @@ export class FluidLoadingStateMachine {
     }
 
     const allowed = ALLOWED_TRANSITIONS[this.currentState];
-    if (!allowed || !allowed.has(next)) {
+    if (!allowed?.has(next)) {
       return false;
     }
 
