@@ -1,0 +1,44 @@
+name: 💡 Feature Request
+description: Suggest an idea or feature for Fluid Loading
+title: 'feat: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! Please describe your use case and proposal.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Target Package
+      multiple: true
+      options:
+        - '@fluid-loading/core'
+        - '@fluid-loading/react'
+        - 'all packages'
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: Is your feature request related to a problem or limitation? Please describe.
+      placeholder: 'I find it difficult to...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe what you would like to see happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you have considered.
