@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/rgdlr/fluid-loading.git"
   },
+  "packageManager": "pnpm@11.25.0",
   "type": "module",
   "scripts": {
     "build": "pnpm -r run build",
