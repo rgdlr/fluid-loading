@@ -7,9 +7,9 @@
     "build": "pnpm -r run build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev": "pnpm --filter @fluid-loading/landing dev",
-    "preview": "pnpm --filter @fluid-loading/landing preview",
-    "typecheck": "pnpm -r run typecheck"
+    "typecheck": "pnpm -r run typecheck",
+    "landing:dev": "pnpm --filter @fluid-loading/landing dev",
+    "landing:preview": "pnpm --filter @fluid-loading/landing preview"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
