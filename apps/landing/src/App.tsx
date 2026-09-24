@@ -11,6 +11,9 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './landing.css';
 
+import banner from '/banner.jpg';
+import favicon from '/favicon.jpg';
+
 type ContentType =
   | 'card'
   | 'article'
@@ -442,7 +445,7 @@ export function UserCard({ user, loading, error }) {
         <div className="navbar-container">
           <div className="header-brand">
             <div className="header-logo-wrapper">
-              <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+              <img src={favicon} alt="fluid-loading logo" className="header-logo-img" />
             </div>
             <h1>fluid-loading</h1>
             <span className="version-pill">v0.1.0</span>
@@ -1290,7 +1293,7 @@ export function UserCard({ user, loading, error }) {
         <footer className="landing-footer">
           <div className="footer-brand">
             <div className="header-logo-wrapper" style={{ width: 32, height: 32 }}>
-              <img src="/favicon.jpg" alt="fluid-loading logo" className="header-logo-img" />
+              <img src={favicon} alt="fluid-loading logo" className="header-logo-img" />
             </div>
             <h2>fluid-loading</h2>
           </div>
@@ -1332,7 +1335,7 @@ function renderContent(type: ContentType, variation: ContentVariation) {
       return (
         <div className="content-card">
           <img
-            src="/banner.jpg"
+            src={banner}
             alt="fluid-loading banner"
             className="content-card-image"
             data-fluid-loading-type="rect"
