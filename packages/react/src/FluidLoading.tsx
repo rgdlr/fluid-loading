@@ -1,23 +1,17 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useCallback,
-} from 'react';
 import {
   DEFAULTS,
   FluidLoadingStateMachine,
+  type InternalState,
   isReducedMotionPreferred,
+  type LayoutSnapshot,
   measureElement,
   resolveTiming,
-  type InternalState,
-  type LayoutSnapshot,
 } from '@fluid-loading/core';
+import type React from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { FluidLoadingProps } from './types.js';
 
-const useIsomorphicLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 function parseDurationMs(val: unknown): number | undefined {
   if (typeof val === 'number') return val;
@@ -58,19 +52,15 @@ export function FluidLoading({
   const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const stateMachineRef = useRef<FluidLoadingStateMachine>(
-    new FluidLoadingStateMachine(loading ? 'loading' : error ? 'error' : 'ready')
+    new FluidLoadingStateMachine(loading ? 'loading' : error ? 'error' : 'ready'),
   );
 
   const [internalState, setInternalState] = useState<InternalState>(() =>
-    loading ? 'loading' : error ? 'error' : 'ready'
+    loading ? 'loading' : error ? 'error' : 'ready',
   );
   const [snapshot, setSnapshot] = useState<LayoutSnapshot | null>(null);
-  const [containerHeight, setContainerHeight] = useState<number | string>(
-    estimatedHeight
-  );
-  const [containerWidth, setContainerWidth] = useState<number | string>(
-    estimatedWidth
-  );
+  const [containerHeight, setContainerHeight] = useState<number | string>(estimatedHeight);
+  const [containerWidth, setContainerWidth] = useState<number | string>(estimatedWidth);
   const [isMorphing, setIsMorphing] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
 
@@ -101,11 +91,16 @@ export function FluidLoading({
     return unsubscribe;
   }, [onStateChange, onInternalStateChange]);
 
-  const reducedMotion =
-    typeof window !== 'undefined' && isReducedMotionPreferred();
-  const styleDuration = parseDurationMs(style?.['--fluid-loading-duration' as keyof React.CSSProperties]);
-  const styleRevealDuration = parseDurationMs(style?.['--fluid-loading-reveal-duration' as keyof React.CSSProperties]);
-  const styleMinSkeleton = parseDurationMs(style?.['--fluid-loading-minimum-skeleton-duration' as keyof React.CSSProperties]);
+  const reducedMotion = typeof window !== 'undefined' && isReducedMotionPreferred();
+  const styleDuration = parseDurationMs(
+    style?.['--fluid-loading-duration' as keyof React.CSSProperties],
+  );
+  const styleRevealDuration = parseDurationMs(
+    style?.['--fluid-loading-reveal-duration' as keyof React.CSSProperties],
+  );
+  const styleMinSkeleton = parseDurationMs(
+    style?.['--fluid-loading-minimum-skeleton-duration' as keyof React.CSSProperties],
+  );
 
   const timing = resolveTiming(
     {
@@ -113,7 +108,7 @@ export function FluidLoading({
       revealDuration: revealDuration ?? styleRevealDuration,
       minimumSkeletonDuration: minimumSkeletonDuration ?? styleMinSkeleton,
     },
-    reducedMotion
+    reducedMotion,
   );
 
   useEffect(() => {
@@ -221,8 +216,8 @@ export function FluidLoading({
   const effectiveState: InternalState = loading
     ? 'loading'
     : error !== undefined && error !== null
-    ? 'error'
-    : internalState;
+      ? 'error'
+      : internalState;
 
   const isReady = effectiveState === 'ready';
   const isError = effectiveState === 'error';
@@ -232,14 +227,14 @@ export function FluidLoading({
   const currentHeight = loading
     ? estimatedHeight
     : isReady
-    ? (style?.height ?? 'auto')
-    : containerHeight;
+      ? (style?.height ?? 'auto')
+      : containerHeight;
 
   const currentWidth = loading
     ? estimatedWidth
     : isReady
-    ? (style?.width ?? 'auto')
-    : containerWidth;
+      ? (style?.width ?? 'auto')
+      : containerWidth;
 
   const rootStyle: React.CSSProperties & Record<string, string | number | undefined> = {
     ...style,
@@ -275,14 +270,11 @@ export function FluidLoading({
     rootStyle['--fluid-loading-reveal-duration' as string] = `${timing.revealDuration}ms`;
   }
   if (minimumSkeletonDuration !== undefined) {
-    rootStyle['--fluid-loading-minimum-skeleton-duration' as string] = `${timing.minimumSkeletonDuration}ms`;
+    rootStyle['--fluid-loading-minimum-skeleton-duration' as string] =
+      `${timing.minimumSkeletonDuration}ms`;
   }
 
-  const rootClass = [
-    'fluid-loading-root',
-    isMorphing ? 'fluid-loading-morphing' : '',
-    className,
-  ]
+  const rootClass = ['fluid-loading-root', isMorphing ? 'fluid-loading-morphing' : '', className]
     .filter(Boolean)
     .join(' ');
 
@@ -346,9 +338,7 @@ export function FluidLoading({
                     width: `${bone.width}px`,
                     height: `${bone.height}px`,
                     borderRadius:
-                      bone.borderRadius !== undefined
-                        ? `${bone.borderRadius}px`
-                        : undefined,
+                      bone.borderRadius !== undefined ? `${bone.borderRadius}px` : undefined,
                   }}
                 />
               ))}

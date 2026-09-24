@@ -2,14 +2,25 @@ import { createSnapshot } from './snapshot.js';
 import type { Bone, BoneType, LayoutSnapshot, MeasureOptions } from './types.js';
 
 const TEXT_TAGS = new Set([
-  'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-  'P', 'SPAN', 'LABEL', 'SMALL', 'STRONG',
-  'EM', 'B', 'I', 'A', 'TIME'
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'P',
+  'SPAN',
+  'LABEL',
+  'SMALL',
+  'STRONG',
+  'EM',
+  'B',
+  'I',
+  'A',
+  'TIME',
 ]);
 
-const LEAF_MEDIA_TAGS = new Set([
-  'IMG', 'SVG', 'CANVAS', 'VIDEO', 'BUTTON', 'INPUT', 'TEXTAREA'
-]);
+const LEAF_MEDIA_TAGS = new Set(['IMG', 'SVG', 'CANVAS', 'VIDEO', 'BUTTON', 'INPUT', 'TEXTAREA']);
 
 function parseBorderRadius(radiusStr: string, minDim: number): number {
   if (!radiusStr) return 0;
@@ -27,7 +38,7 @@ function detectBoneType(
   width: number,
   height: number,
   radius: number,
-  typeAttr: string
+  typeAttr: string,
 ): BoneType {
   const explicit = element.getAttribute(typeAttr)?.toLowerCase();
   if (explicit === 'circle' || explicit === 'text' || explicit === 'rect') {
@@ -54,7 +65,7 @@ function detectBoneType(
 function isElementVisible(
   element: HTMLElement,
   computed: CSSStyleDeclaration,
-  rootComputed: CSSStyleDeclaration
+  rootComputed: CSSStyleDeclaration,
 ): boolean {
   if (computed.display === 'none') {
     return false;
@@ -136,7 +147,7 @@ export function measureElement(root: HTMLElement, options: MeasureOptions = {}):
     const hasText = hasRenderableText(el);
 
     const hasCandidateChildren = candidateElements.some(
-      (other) => other.el !== el && el.contains(other.el)
+      (other) => other.el !== el && el.contains(other.el),
     );
 
     const shouldRenderBone =
@@ -144,7 +155,8 @@ export function measureElement(root: HTMLElement, options: MeasureOptions = {}):
       isLeafMedia ||
       (isTextTag && !hasCandidateChildren) ||
       (!hasCandidateChildren && hasText) ||
-      (!hasCandidateChildren && (computed.backgroundColor !== 'rgba(0, 0, 0, 0)' || computed.backgroundImage !== 'none'));
+      (!hasCandidateChildren &&
+        (computed.backgroundColor !== 'rgba(0, 0, 0, 0)' || computed.backgroundImage !== 'none'));
 
     if (!shouldRenderBone) {
       continue;
@@ -152,7 +164,8 @@ export function measureElement(root: HTMLElement, options: MeasureOptions = {}):
 
     const w = rect.width;
     const h = rect.height;
-    const rawRadius = computed.borderRadius || computed.borderTopLeftRadius || el.style.borderRadius;
+    const rawRadius =
+      computed.borderRadius || computed.borderTopLeftRadius || el.style.borderRadius;
     const radius = parseBorderRadius(rawRadius, Math.min(w, h));
     const type = detectBoneType(el, w, h, radius, typeAttr);
 

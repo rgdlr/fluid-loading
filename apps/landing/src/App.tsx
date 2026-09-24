@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  FluidLoading,
-  measureElement,
-  serializeSnapshot,
   createSkeletonElement,
+  FluidLoading,
   type FluidLoadingState,
   type InternalState,
   type LayoutSnapshot,
+  measureElement,
+  serializeSnapshot,
 } from '@fluid-loading/react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './landing.css';
 
 type ContentType = 'card' | 'article' | 'profile' | 'dashboard';
@@ -439,9 +440,15 @@ export function UserCard({ user, loading, error }) {
           </div>
 
           <div className="nav-links">
-            <a href="#playground" className="nav-link">Playground</a>
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#quickstart" className="nav-link">Quick Start</a>
+            <a href="#playground" className="nav-link">
+              Playground
+            </a>
+            <a href="#features" className="nav-link">
+              Features
+            </a>
+            <a href="#quickstart" className="nav-link">
+              Quick Start
+            </a>
           </div>
 
           <div className="nav-actions">
@@ -452,7 +459,13 @@ export function UserCard({ user, loading, error }) {
               className="nav-github-btn"
               aria-label="View on GitHub"
             >
-              <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <svg
+                height="16"
+                width="16"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
               </svg>
               <span>GitHub</span>
@@ -467,12 +480,14 @@ export function UserCard({ user, loading, error }) {
             <span>✨ Layout-Aware Transition Engine for React</span>
           </div>
           <h1 className="hero-title">
-            Stop flashing generic skeletons.<br />
+            Stop flashing generic skeletons.
+            <br />
             <span className="hero-gradient-text">Morph smoothly into real layouts.</span>
           </h1>
           <p className="hero-subtitle">
-            fluid-loading measures real DOM geometry in-flight, smoothly interpolates container dimensions,
-            and reveals your content with zero visual jarring and 0.00 Cumulative Layout Shift.
+            fluid-loading measures real DOM geometry in-flight, smoothly interpolates container
+            dimensions, and reveals your content with zero visual jarring and 0.00 Cumulative Layout
+            Shift.
           </p>
 
           <div className="hero-ctas">
@@ -487,11 +502,33 @@ export function UserCard({ user, loading, error }) {
               <span className="terminal-copy-badge">
                 <span className="terminal-copy-icon-wrap">
                   {copiedInstall ? (
-                    <svg className="terminal-copy-icon check-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="terminal-copy-icon check-icon"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   ) : (
-                    <svg className="terminal-copy-icon clipboard-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg
+                      className="terminal-copy-icon clipboard-icon"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                     </svg>
@@ -526,7 +563,8 @@ export function UserCard({ user, loading, error }) {
             <span className="section-tag">Playground</span>
             <h2 className="section-title">Experience the Transition Live</h2>
             <p className="section-desc">
-              Test in-flight geometry morphing, skeleton detection, and custom theme tokens in real time.
+              Test in-flight geometry morphing, skeleton detection, and custom theme tokens in real
+              time.
             </p>
           </div>
 
@@ -572,9 +610,19 @@ export function UserCard({ user, loading, error }) {
                 onClick={resetAll}
                 title="Reset all settings to default"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                  <path d="M3 3v5h5"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
                 </svg>
                 <span>Reset All</span>
               </button>
@@ -597,7 +645,17 @@ export function UserCard({ user, loading, error }) {
                       onClick={triggerLoad}
                       title="Trigger loading and transition cycle"
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
                         <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                         <path d="M3 3v5h5" />
                         <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
@@ -690,7 +748,10 @@ export function UserCard({ user, loading, error }) {
 
                       <div className="control-group">
                         <label>
-                          Motion Preference <span className="value">{motionMode === 'normal' ? 'Normal' : 'Reduced'}</span>
+                          Motion Preference{' '}
+                          <span className="value">
+                            {motionMode === 'normal' ? 'Normal' : 'Reduced'}
+                          </span>
                         </label>
                         <div className="segmented-control">
                           {(['normal', 'reduced'] as MotionMode[]).map((m) => (
@@ -742,7 +803,8 @@ export function UserCard({ user, loading, error }) {
 
                       <div className="control-group">
                         <label>
-                          Min Skeleton Delay <span className="value">{minimumSkeletonDuration}ms</span>
+                          Min Skeleton Delay{' '}
+                          <span className="value">{minimumSkeletonDuration}ms</span>
                         </label>
                         <input
                           type="range"
@@ -873,7 +935,9 @@ export function UserCard({ user, loading, error }) {
                               setShimmerHex(e.target.value);
                             }}
                           />
-                          <span className="color-value-text">{hexToRgba(shimmerHex, shimmerOpacity)}</span>
+                          <span className="color-value-text">
+                            {hexToRgba(shimmerHex, shimmerOpacity)}
+                          </span>
                         </div>
                       </div>
 
@@ -995,15 +1059,33 @@ export function UserCard({ user, loading, error }) {
                   onClick={copyActiveCode}
                   title="Copy snippet to clipboard"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
-                  <span>{copiedCode ? 'Copied!' : (exportTab === 'css' ? 'Copy Variables' : 'Copy Component')}</span>
+                  <span>
+                    {copiedCode
+                      ? 'Copied!'
+                      : exportTab === 'css'
+                        ? 'Copy Variables'
+                        : 'Copy Component'}
+                  </span>
                 </button>
               </div>
 
-              <pre className="workbench-code-box">{exportTab === 'css' ? getCssVariablesCode() : getReactUsageCode()}</pre>
+              <pre className="workbench-code-box">
+                {exportTab === 'css' ? getCssVariablesCode() : getReactUsageCode()}
+              </pre>
             </div>
           </div>
         </section>
@@ -1013,7 +1095,8 @@ export function UserCard({ user, loading, error }) {
             <span className="section-tag">Features</span>
             <h2 className="section-title">Architecture &amp; Real-time Verification</h2>
             <p className="section-desc">
-              Inspect generated structural bone primitives, run in-browser layout benchmarks, and verify 0.00 CLS.
+              Inspect generated structural bone primitives, run in-browser layout benchmarks, and
+              verify 0.00 CLS.
             </p>
           </div>
 
@@ -1031,8 +1114,11 @@ export function UserCard({ user, loading, error }) {
               {lastSnapshot && lastSnapshot.bones.length > 0 ? (
                 <>
                   <p className="bento-subtitle">
-                    Snapshot: <strong>{lastSnapshot.width}×{lastSnapshot.height}px</strong> &bull;{' '}
-                    {lastSnapshot.bones.filter((b) => b.type === 'text').length} text,{' '}
+                    Snapshot:{' '}
+                    <strong>
+                      {lastSnapshot.width}×{lastSnapshot.height}px
+                    </strong>{' '}
+                    &bull; {lastSnapshot.bones.filter((b) => b.type === 'text').length} text,{' '}
                     {lastSnapshot.bones.filter((b) => b.type === 'rect').length} rect,{' '}
                     {lastSnapshot.bones.filter((b) => b.type === 'circle').length} circle
                   </p>
@@ -1096,7 +1182,10 @@ export function UserCard({ user, loading, error }) {
                 </div>
               ) : (
                 <div className="bento-empty-state">
-                  <span>Click "Run Benchmark" to test throughput across 10, 100, 500, and 1,000 DOM nodes.</span>
+                  <span>
+                    Click "Run Benchmark" to test throughput across 10, 100, 500, and 1,000 DOM
+                    nodes.
+                  </span>
                 </div>
               )}
             </div>
@@ -1107,7 +1196,8 @@ export function UserCard({ user, loading, error }) {
               <span className="feature-mini-icon">🛡️</span>
               <h3 className="feature-mini-title">Zero Layout Shifts</h3>
               <p className="feature-mini-desc">
-                By measuring actual rendered DOM geometry before reveal and animating container dimensions, content never abruptly shifts existing layout elements.
+                By measuring actual rendered DOM geometry before reveal and animating container
+                dimensions, content never abruptly shifts existing layout elements.
               </p>
             </div>
 
@@ -1115,7 +1205,8 @@ export function UserCard({ user, loading, error }) {
               <span className="feature-mini-icon">♿</span>
               <h3 className="feature-mini-title">Accessible by Default</h3>
               <p className="feature-mini-desc">
-                Automatically manages aria-busy, marks skeletons with aria-hidden, and detects reduced motion preference to transition instantly without animation.
+                Automatically manages aria-busy, marks skeletons with aria-hidden, and detects
+                reduced motion preference to transition instantly without animation.
               </p>
             </div>
 
@@ -1123,7 +1214,8 @@ export function UserCard({ user, loading, error }) {
               <span className="feature-mini-icon">🎨</span>
               <h3 className="feature-mini-title">Zero Dependencies</h3>
               <p className="feature-mini-desc">
-                Styles are bundled directly into @fluid-loading/react with no extra CSS imports required. Easily theme via CSS custom properties (--fluid-loading-*).
+                Styles are bundled directly into @fluid-loading/react with no extra CSS imports
+                required. Easily theme via CSS custom properties (--fluid-loading-*).
               </p>
             </div>
           </div>
@@ -1134,18 +1226,15 @@ export function UserCard({ user, loading, error }) {
             <span className="section-tag">Quick Start</span>
             <h2 className="section-title">Integrate in Minutes</h2>
             <p className="section-desc">
-              Install the React package and wrap your component. Zero manual CSS setup or placeholder drawings needed.
+              Install the React package and wrap your component. Zero manual CSS setup or
+              placeholder drawings needed.
             </p>
           </div>
 
           <div className="quickstart-card">
             <div className="quickstart-header">
               <span className="quickstart-title">UserCard.tsx</span>
-              <button
-                type="button"
-                className="copy-css-btn"
-                onClick={copyQuickstartCode}
-              >
+              <button type="button" className="copy-css-btn" onClick={copyQuickstartCode}>
                 {copiedQuickstart ? 'Copied!' : 'Copy Code'}
               </button>
             </div>
@@ -1164,9 +1253,15 @@ export function UserCard({ user, loading, error }) {
             A layout-aware skeleton and transition engine for React and the DOM.
           </p>
           <div className="footer-links">
-            <a href="#playground" className="footer-link">Playground</a>
-            <a href="#features" className="footer-link">Features</a>
-            <a href="#quickstart" className="footer-link">Quick Start</a>
+            <a href="#playground" className="footer-link">
+              Playground
+            </a>
+            <a href="#features" className="footer-link">
+              Features
+            </a>
+            <a href="#quickstart" className="footer-link">
+              Quick Start
+            </a>
             <a
               href="https://github.com/rgdlr/fluid-loading"
               target="_blank"
@@ -1206,8 +1301,10 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               Building declarative layout transitions without visual shifts or abrupt jumps.
               {variation === 'long' && (
                 <>
-                  <br /><br />
-                  Fluid transitions coordinate between unknown server response latencies and known final geometry.
+                  <br />
+                  <br />
+                  Fluid transitions coordinate between unknown server response latencies and known
+                  final geometry.
                 </>
               )}
             </p>
@@ -1238,16 +1335,19 @@ function renderContent(type: ContentType, variation: ContentVariation) {
             Designing Fluid Loading Transitions in Modern Web Applications
           </h1>
           <p className="content-card-desc">
-            Skeletons were supposed to replace spinners, but inaccurate skeletons created a new UX antipattern: layout shifts.
+            Skeletons were supposed to replace spinners, but inaccurate skeletons created a new UX
+            antipattern: layout shifts.
           </p>
           {variation !== 'short' && (
             <p className="content-card-desc">
-              By measuring the real rendered surface in-flight and applying a morphing transition, we can eliminate layout shift entirely.
+              By measuring the real rendered surface in-flight and applying a morphing transition,
+              we can eliminate layout shift entirely.
             </p>
           )}
           {variation === 'long' && (
             <p className="content-card-desc">
-              The result is a perception of speed where the UI feels like it unfolds naturally rather than popping into existence.
+              The result is a perception of speed where the UI feels like it unfolds naturally
+              rather than popping into existence.
             </p>
           )}
         </article>
@@ -1268,7 +1368,9 @@ function renderContent(type: ContentType, variation: ContentVariation) {
               border: '2px solid rgba(251, 191, 36, 0.3)',
             }}
           />
-          <h2 className="content-card-title" style={{ margin: 0 }}>John Doe</h2>
+          <h2 className="content-card-title" style={{ margin: 0 }}>
+            John Doe
+          </h2>
           <p style={{ margin: '0.25rem 0 1rem', color: '#94a3b8', fontSize: '0.9rem' }}>@johndoe</p>
           <p className="content-card-desc" style={{ maxWidth: 400, margin: '0 auto 1.5rem' }}>
             Systems architect & UI engineer. Exploring layout engines and reactive primitives.
@@ -1276,16 +1378,28 @@ function renderContent(type: ContentType, variation: ContentVariation) {
           {variation !== 'short' && (
             <div className="stats-grid">
               <div className="stat-item">
-                <div data-fluid-loading-ignore className="stat-value">142</div>
-                <div data-fluid-loading-ignore className="stat-label">Projects</div>
+                <div data-fluid-loading-ignore className="stat-value">
+                  142
+                </div>
+                <div data-fluid-loading-ignore className="stat-label">
+                  Projects
+                </div>
               </div>
               <div className="stat-item">
-                <div data-fluid-loading-ignore className="stat-value">18.4k</div>
-                <div data-fluid-loading-ignore className="stat-label">Followers</div>
+                <div data-fluid-loading-ignore className="stat-value">
+                  18.4k
+                </div>
+                <div data-fluid-loading-ignore className="stat-label">
+                  Followers
+                </div>
               </div>
               <div className="stat-item">
-                <div data-fluid-loading-ignore className="stat-value">890</div>
-                <div data-fluid-loading-ignore className="stat-label">Stars</div>
+                <div data-fluid-loading-ignore className="stat-value">
+                  890
+                </div>
+                <div data-fluid-loading-ignore className="stat-label">
+                  Stars
+                </div>
               </div>
             </div>
           )}
@@ -1296,25 +1410,42 @@ function renderContent(type: ContentType, variation: ContentVariation) {
     case 'dashboard':
       return (
         <div className="content-card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem',
+            }}
+          >
             <h3 style={{ margin: 0, fontSize: '1rem', color: '#94a3b8' }}>Total Revenue</h3>
             <span style={{ color: '#fbbf24', fontSize: '0.85rem', fontWeight: 600 }}>+18.2%</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem' }}>
+          <div
+            style={{ fontSize: '2rem', fontWeight: 700, color: '#f8fafc', marginBottom: '1rem' }}
+          >
             $84,230.00
           </div>
           <div
             data-fluid-loading-type="rect"
             style={{
               height: variation === 'short' ? 60 : variation === 'long' ? 160 : 100,
-              background: 'linear-gradient(180deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.02) 100%)',
+              background:
+                'linear-gradient(180deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.02) 100%)',
               border: '1px solid rgba(245, 158, 11, 0.25)',
               borderRadius: 8,
               marginBottom: '1rem',
             }}
           />
           {variation === 'long' && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: '0.8rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                color: '#94a3b8',
+                fontSize: '0.8rem',
+              }}
+            >
               <span>Jan: $24k</span>
               <span>Feb: $28k</span>
               <span>Mar: $32k</span>

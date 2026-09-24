@@ -29,7 +29,9 @@ const ALLOWED_TRANSITIONS: Record<InternalState, ReadonlySet<InternalState>> = {
 export class FluidLoadingStateMachine {
   private currentState: InternalState;
   private currentError: unknown = null;
-  private readonly listeners = new Set<(internal: InternalState, publicState: FluidLoadingState) => void>();
+  private readonly listeners = new Set<
+    (internal: InternalState, publicState: FluidLoadingState) => void
+  >();
 
   constructor(initialState: InternalState = 'loading') {
     this.currentState = initialState;
@@ -73,7 +75,9 @@ export class FluidLoadingStateMachine {
     this.notify();
   }
 
-  subscribe(listener: (internal: InternalState, publicState: FluidLoadingState) => void): () => void {
+  subscribe(
+    listener: (internal: InternalState, publicState: FluidLoadingState) => void,
+  ): () => void {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);

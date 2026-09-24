@@ -2,7 +2,7 @@ import type { LayoutSnapshot } from './types.js';
 
 export function createSkeletonElement(
   snapshot: LayoutSnapshot,
-  options: { className?: string; includeShimmer?: boolean } = {}
+  options: { className?: string; includeShimmer?: boolean } = {},
 ): HTMLElement {
   const container = document.createElement('div');
   container.className = `fluid-loading-skeleton ${options.className ?? ''}`.trim();
@@ -40,7 +40,7 @@ export function createSkeletonElement(
 
 export function createEstimatedSkeletonElement(
   height: number,
-  width: number | string = '100%'
+  width: number | string = '100%',
 ): HTMLElement {
   const container = document.createElement('div');
   container.className = 'fluid-loading-skeleton fluid-loading-estimated';

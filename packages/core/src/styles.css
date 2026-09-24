@@ -23,8 +23,9 @@
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  transition: height var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1),
-              width var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    height var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1),
+    width var(--fluid-loading-duration) cubic-bezier(0.2, 0, 0, 1);
   will-change: height, width;
 }
 

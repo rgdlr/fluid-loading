@@ -1,5 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react';
 import type { FluidLoadingState, InternalState, LayoutSnapshot } from '@fluid-loading/core';
+import type { CSSProperties, ReactNode } from 'react';
 
 export interface FluidLoadingProps {
   loading: boolean;

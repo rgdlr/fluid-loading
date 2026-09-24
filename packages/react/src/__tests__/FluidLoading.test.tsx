@@ -1,6 +1,6 @@
-import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FluidLoading } from '../FluidLoading.js';
 
 describe('<FluidLoading /> integration', () => {
@@ -44,7 +44,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <Card />
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     const root = document.querySelector('.fluid-loading-root') as HTMLElement;
@@ -62,7 +62,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <Card />
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     act(() => {
@@ -92,7 +92,7 @@ describe('<FluidLoading /> integration', () => {
     const { rerender } = render(
       <FluidLoading loading={true} estimatedHeight={120}>
         <div style={{ height: 100 }}>Short content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     const root = document.querySelector('.fluid-loading-root') as HTMLElement;
@@ -101,7 +101,7 @@ describe('<FluidLoading /> integration', () => {
     rerender(
       <FluidLoading loading={true} estimatedHeight={450}>
         <div style={{ height: 400 }}>Long content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     expect(root.style.height).toBe('450px');
@@ -118,7 +118,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Should not be visible</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     const root = document.querySelector('.fluid-loading-root') as HTMLElement;
@@ -139,7 +139,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Fast Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     rerender(
@@ -151,7 +151,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Fast Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     act(() => {
@@ -179,7 +179,7 @@ describe('<FluidLoading /> integration', () => {
     render(
       <FluidLoading loading={true} estimatedHeight={320}>
         <div>Will load eventually</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     act(() => {
@@ -213,7 +213,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Accessible Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     rerender(
@@ -225,7 +225,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Accessible Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     act(() => {
@@ -248,13 +248,15 @@ describe('<FluidLoading /> integration', () => {
         rectRadius={10}
       >
         <div>Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     const root = document.querySelector('.fluid-loading-root') as HTMLElement;
     expect(root.style.getPropertyValue('--fluid-loading-bone-bg')).toBe('#333333');
     expect(root.style.getPropertyValue('--fluid-loading-surface-bg')).toBe('#111111');
-    expect(root.style.getPropertyValue('--fluid-loading-shimmer-color')).toBe('rgba(255, 255, 255, 0.5)');
+    expect(root.style.getPropertyValue('--fluid-loading-shimmer-color')).toBe(
+      'rgba(255, 255, 255, 0.5)',
+    );
     expect(root.style.getPropertyValue('--fluid-loading-shimmer-duration')).toBe('2s');
     expect(root.style.getPropertyValue('--fluid-loading-radius')).toBe('16px');
     expect(root.style.getPropertyValue('--fluid-loading-text-radius')).toBe('6px');
@@ -275,7 +277,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     rerender(
@@ -289,7 +291,7 @@ describe('<FluidLoading /> integration', () => {
         onStateChange={(state) => states.push(state)}
       >
         <div>Content</div>
-      </FluidLoading>
+      </FluidLoading>,
     );
 
     act(() => {

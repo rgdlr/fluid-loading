@@ -27,7 +27,7 @@ export interface ResolvedTiming {
 
 export function resolveTiming(
   options: TransitionTimingOptions,
-  reducedMotion: boolean = isReducedMotionPreferred()
+  reducedMotion: boolean = isReducedMotionPreferred(),
 ): ResolvedTiming {
   if (reducedMotion) {
     return {

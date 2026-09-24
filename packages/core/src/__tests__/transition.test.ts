@@ -12,7 +12,7 @@ describe('resolveTiming', () => {
   it('respects custom timing overrides', () => {
     const timing = resolveTiming(
       { duration: 500, revealDuration: 200, minimumSkeletonDuration: 180 },
-      false
+      false,
     );
     expect(timing.duration).toBe(500);
     expect(timing.revealDuration).toBe(200);
@@ -22,7 +22,7 @@ describe('resolveTiming', () => {
   it('sets all durations to 0 when reduced motion is requested', () => {
     const timing = resolveTiming(
       { duration: 500, revealDuration: 200, minimumSkeletonDuration: 180 },
-      true
+      true,
     );
     expect(timing.duration).toBe(0);
     expect(timing.revealDuration).toBe(0);

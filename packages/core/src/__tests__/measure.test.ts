@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { measureElement } from '../measure.js';
 
-function setMockRect(el: HTMLElement, rect: { left: number; top: number; width: number; height: number }) {
+function setMockRect(
+  el: HTMLElement,
+  rect: { left: number; top: number; width: number; height: number },
+) {
   el.getBoundingClientRect = () => ({
     left: rect.left,
     top: rect.top,

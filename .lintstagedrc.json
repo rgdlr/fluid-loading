@@ -1,0 +1,4 @@
+{
+  "*.{js,ts,tsx,jsx}": ["biome check --write --no-errors-on-unmatched"],
+  "*.{json,css,md}": ["biome format --write --no-errors-on-unmatched"]
+}
