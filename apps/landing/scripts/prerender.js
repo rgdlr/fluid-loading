@@ -13,7 +13,6 @@ async function prerender() {
   }
 
   const template = fs.readFileSync(templatePath, 'utf-8');
-  // Use pathToFileURL for robust ESM dynamic import across platforms
   const { render } = await import(pathToFileURL(ssrEntryPath).href);
   const appHtml = render();
 
@@ -25,7 +24,6 @@ async function prerender() {
   fs.writeFileSync(templatePath, finalHtml, 'utf-8');
   console.log('✓ Successfully prerendered index.html with static HTML content.');
 
-  // Clean up temporary SSR bundle directory
   fs.rmSync(path.resolve(distDir, 'ssr'), { recursive: true, force: true });
 }
 

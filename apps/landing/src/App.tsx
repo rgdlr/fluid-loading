@@ -36,6 +36,46 @@ interface ThemePreset {
   rectRadius: number;
 }
 
+interface TimingPreset {
+  id: string;
+  name: string;
+  icon: string;
+  duration: number;
+  revealDuration: number;
+  minimumSkeletonDuration: number;
+  networkDelay: number;
+}
+
+const TIMING_PRESETS: TimingPreset[] = [
+  {
+    id: 'snappy',
+    name: 'Snappy Fast',
+    icon: '⚡',
+    duration: 200,
+    revealDuration: 120,
+    minimumSkeletonDuration: 180,
+    networkDelay: 350,
+  },
+  {
+    id: 'balanced',
+    name: 'Balanced',
+    icon: '⚖️',
+    duration: 350,
+    revealDuration: 200,
+    minimumSkeletonDuration: 350,
+    networkDelay: 600,
+  },
+  {
+    id: 'slow',
+    name: 'Slow Motion',
+    icon: '🐢',
+    duration: 1000,
+    revealDuration: 400,
+    minimumSkeletonDuration: 1000,
+    networkDelay: 1200,
+  },
+];
+
 const THEME_PRESETS: ThemePreset[] = [
   {
     id: 'amber',
@@ -84,7 +124,31 @@ const THEME_PRESETS: ThemePreset[] = [
     containerRadius: 12,
     textRadius: 4,
     rectRadius: 8,
-  }
+  },
+  {
+    id: 'crimson',
+    name: 'Crimson Rose',
+    boneBg: '#3a1d28',
+    surfaceBg: '#1a0c14',
+    shimmerHex: '#fb7185',
+    shimmerOpacity: 30,
+    shimmerDuration: 1.3,
+    containerRadius: 12,
+    textRadius: 5,
+    rectRadius: 8,
+  },
+  {
+    id: 'nordic',
+    name: 'Nordic Frost',
+    boneBg: '#1e293b',
+    surfaceBg: '#0b1324',
+    shimmerHex: '#38bdf8',
+    shimmerOpacity: 30,
+    shimmerDuration: 1.5,
+    containerRadius: 14,
+    textRadius: 4,
+    rectRadius: 10,
+  },
 ];
 
 function hexToRgba(hex: string, alphaPercent: number): string {
@@ -107,6 +171,7 @@ export function App(): React.JSX.Element {
   const [networkDelay, setNetworkDelay] = useState(600);
 
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('behavior');
+  const [selectedTimingPreset, setSelectedTimingPreset] = useState<string>('balanced');
   const [selectedPreset, setSelectedPreset] = useState<string>('amber');
   const [boneBg, setBoneBg] = useState('#353d4f');
   const [surfaceBg, setSurfaceBg] = useState('#1c202b');
@@ -116,7 +181,8 @@ export function App(): React.JSX.Element {
   const [containerRadius, setContainerRadius] = useState(14);
   const [textRadius, setTextRadius] = useState(5);
   const [rectRadius, setRectRadius] = useState(8);
-  const [copiedCss, setCopiedCss] = useState(false);
+  const [exportTab, setExportTab] = useState<'css' | 'react'>('css');
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const [fluidState, setFluidState] = useState<FluidLoadingState>('loading');
   const [internalState, setInternalState] = useState<InternalState>('loading');
@@ -176,18 +242,27 @@ export function App(): React.JSX.Element {
     }, networkDelay);
   };
 
-  const applySlowMotionPreset = () => {
-    setDuration(800);
-    setMinimumSkeletonDuration(1000);
-    setRevealDuration(400);
-    triggerLoad();
+  const applyTimingPreset = (preset: TimingPreset) => {
+    setSelectedTimingPreset(preset.id);
+    setDuration(preset.duration);
+    setRevealDuration(preset.revealDuration);
+    setMinimumSkeletonDuration(preset.minimumSkeletonDuration);
+    setNetworkDelay(preset.networkDelay);
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+    }
+    setLoading(true);
+    setFluidState('loading');
+    setInternalState('loading');
+    timerRef.current = window.setTimeout(() => {
+      setLoading(false);
+    }, preset.networkDelay);
   };
 
   const applyDefaultPreset = () => {
-    setDuration(350);
-    setMinimumSkeletonDuration(350);
-    setRevealDuration(200);
-    triggerLoad();
+    const balanced = TIMING_PRESETS.find((p) => p.id === 'balanced') || TIMING_PRESETS[1];
+    applyTimingPreset(balanced);
+    setEstimatedHeight(240);
   };
 
   const applyThemePreset = (preset: ThemePreset) => {
@@ -206,20 +281,46 @@ export function App(): React.JSX.Element {
     applyThemePreset(THEME_PRESETS[0]);
   };
 
-  const copyCssVariables = () => {
+  const resetAll = () => {
+    applyDefaultPreset();
+    resetStylesToDefault();
+    setContentType('card');
+    setVariation('medium');
+    setMotionMode('normal');
+  };
+
+  const getCssVariablesCode = () => {
     const shimmerColor = hexToRgba(shimmerHex, shimmerOpacity);
-    const css = `:root {
-  --fluid-loading-bone-bg: ${boneBg};
-  --fluid-loading-surface-bg: ${surfaceBg};
-  --fluid-loading-shimmer-color: ${shimmerColor};
+    return `:root {
+  --fluid-loading-duration: ${motionMode === 'reduced' ? '0ms' : `${duration}ms`};
+  --fluid-loading-reveal-duration: ${motionMode === 'reduced' ? '0ms' : `${revealDuration}ms`};
   --fluid-loading-shimmer-duration: ${shimmerDuration}s;
   --fluid-loading-radius: ${containerRadius}px;
   --fluid-loading-text-radius: ${textRadius}px;
   --fluid-loading-rect-radius: ${rectRadius}px;
+  --fluid-loading-surface-bg: ${surfaceBg};
+  --fluid-loading-bone-bg: ${boneBg};
+  --fluid-loading-shimmer-color: ${shimmerColor};
 }`;
-    navigator.clipboard.writeText(css).then(() => {
-      setCopiedCss(true);
-      window.setTimeout(() => setCopiedCss(false), 2000);
+  };
+
+  const getReactUsageCode = () => {
+    return `<FluidLoading
+  loading={loading}
+  estimatedHeight={${estimatedHeight}}
+  duration={${motionMode === 'reduced' ? 0 : duration}}
+  revealDuration={${motionMode === 'reduced' ? 0 : revealDuration}}
+  minimumSkeletonDuration={${motionMode === 'reduced' ? 0 : minimumSkeletonDuration}}
+>
+  <YourContent />
+</FluidLoading>`;
+  };
+
+  const copyActiveCode = () => {
+    const code = exportTab === 'css' ? getCssVariablesCode() : getReactUsageCode();
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(true);
+      window.setTimeout(() => setCopiedCode(false), 2000);
     });
   };
 
@@ -329,9 +430,8 @@ export function UserCard({ user, loading, error }) {
           </div>
 
           <div className="nav-links">
-            <a href="#demo" className="nav-link">Interactive Demo</a>
+            <a href="#playground" className="nav-link">Playground</a>
             <a href="#features" className="nav-link">Features</a>
-            <a href="#benchmark" className="nav-link">Benchmark</a>
             <a href="#quickstart" className="nav-link">Quick Start</a>
           </div>
 
@@ -367,465 +467,543 @@ export function UserCard({ user, loading, error }) {
           </p>
 
           <div className="hero-ctas">
-            <a href="#demo" className="hero-cta-btn">
-              Explore Interactive Demo ↓
-            </a>
             <button
               type="button"
-              className="hero-terminal-btn"
+              className={`hero-terminal-btn ${copiedInstall ? 'copied' : ''}`}
               onClick={() => copyInstallCommand('npm install @fluid-loading/react')}
+              aria-label="Copy install command"
             >
-              <code>npm install @fluid-loading/react</code>
-              <span>{copiedInstall ? '✓ Copied' : 'Copy'}</span>
+              <span className="terminal-prompt">$</span>
+              <code className="terminal-code">npm install @fluid-loading/react</code>
+              <span className="terminal-copy-badge">
+                <span className="terminal-copy-icon-wrap">
+                  {copiedInstall ? (
+                    <svg className="terminal-copy-icon check-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : (
+                    <svg className="terminal-copy-icon clipboard-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </span>
+              </span>
             </button>
           </div>
 
-          <div className="hero-highlights-strip">
-            <div className="highlight-item">
+          <div className="hero-highlights-grid">
+            <div className="highlight-card">
               <span className="highlight-value">0.00</span>
               <span className="highlight-label">Cumulative Layout Shift</span>
             </div>
-            <div className="highlight-item">
+            <div className="highlight-card">
               <span className="highlight-value">&lt; 1ms</span>
               <span className="highlight-label">Measurement Overhead</span>
             </div>
-            <div className="highlight-item">
+            <div className="highlight-card">
               <span className="highlight-value">Zero-Config</span>
               <span className="highlight-label">Styles Bundled in React</span>
             </div>
-            <div className="highlight-item">
+            <div className="highlight-card">
               <span className="highlight-value">100%</span>
               <span className="highlight-label">Accessible &amp; Reduced-Motion</span>
             </div>
           </div>
         </section>
 
-        <section id="demo" className="demo-section">
+        <section id="playground" className="playground-section">
           <div className="section-header">
-            <span className="section-tag">Interactive Sandbox</span>
+            <span className="section-tag">Playground</span>
             <h2 className="section-title">Experience the Transition Live</h2>
             <p className="section-desc">
               Test in-flight geometry morphing, skeleton detection, and custom theme tokens in real time.
             </p>
           </div>
 
-          <div className="main-layout">
-        <aside className="sidebar">
-          <div className="actions-row">
-            <button className="trigger-button" onClick={triggerLoad}>
-              Reload
-            </button>
-            <button className="preset-button" onClick={applySlowMotionPreset}>
-              Slow Motion
-            </button>
-          </div>
+          <div className="sandbox-workbench">
+            <div className="workbench-toolbar">
+              <div className="workbench-toolbar-left">
+                <div className="workbench-control-field">
+                  <span className="workbench-field-label">Layout:</span>
+                  <div className="segmented-control compact">
+                    {(['card', 'article', 'profile', 'dashboard'] as ContentType[]).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`segmented-button ${contentType === type ? 'active' : ''}`}
+                        onClick={() => handleContentTypeChange(type)}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-          <div className="sidebar-tab-switcher">
-            <button
-              type="button"
-              className={`sidebar-tab-btn ${sidebarTab === 'behavior' ? 'active' : ''}`}
-              onClick={() => setSidebarTab('behavior')}
-            >
-              Timing & Layout
-            </button>
-            <button
-              type="button"
-              className={`sidebar-tab-btn ${sidebarTab === 'styles' ? 'active' : ''}`}
-              onClick={() => setSidebarTab('styles')}
-            >
-              Styles & Theme
-            </button>
-          </div>
+                <div className="workbench-control-field">
+                  <span className="workbench-field-label">Size:</span>
+                  <div className="segmented-control compact">
+                    {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        className={`segmented-button ${variation === v ? 'active' : ''}`}
+                        onClick={() => handleVariationChange(v)}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-          {sidebarTab === 'behavior' ? (
-            <>
               <button
-                className="reset-button"
-                onClick={applyDefaultPreset}
+                type="button"
+                className="workbench-toolbar-reset-btn"
+                onClick={resetAll}
+                title="Reset all settings to default"
               >
-                Reset Timing and Layout
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                <span>Reset All</span>
               </button>
-
-              <div className="control-group">
-                <label>
-                  Content Type: <span className="value">{contentType}</span>
-                </label>
-                <div className="segmented-control">
-                  {(['card', 'article', 'profile', 'dashboard'] as ContentType[]).map((type) => (
-                    <button
-                      key={type}
-                      className={`segmented-button ${contentType === type ? 'active' : ''}`}
-                      onClick={() => handleContentTypeChange(type)}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Variation: <span className="value">{variation}</span>
-                </label>
-                <div className="segmented-control">
-                  {(['short', 'medium', 'long', 'error'] as ContentVariation[]).map((v) => (
-                    <button
-                      key={v}
-                      className={`segmented-button ${variation === v ? 'active' : ''}`}
-                      onClick={() => handleVariationChange(v)}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Motion: <span className="value">{motionMode}</span>
-                </label>
-                <div className="segmented-control">
-                  {(['normal', 'reduced'] as MotionMode[]).map((m) => (
-                    <button
-                      key={m}
-                      className={`segmented-button ${motionMode === m ? 'active' : ''}`}
-                      onClick={() => setMotionMode(m)}
-                    >
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Estimated Height: <span className="value">{estimatedHeight}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="100"
-                  max="600"
-                  step="10"
-                  value={estimatedHeight}
-                  onChange={(e) => setEstimatedHeight(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Morph Duration: <span className="value">{duration}ms</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1500"
-                  step="50"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Min Skeleton Duration: <span className="value">{minimumSkeletonDuration}ms</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="2000"
-                  step="50"
-                  value={minimumSkeletonDuration}
-                  onChange={(e) => setMinimumSkeletonDuration(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Reveal Duration: <span className="value">{revealDuration}ms</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="800"
-                  step="25"
-                  value={revealDuration}
-                  onChange={(e) => setRevealDuration(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Network Delay: <span className="value">{networkDelay}ms</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="2000"
-                  step="100"
-                  value={networkDelay}
-                  onChange={(e) => setNetworkDelay(Number(e.target.value))}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                className="reset-button"
-                onClick={resetStylesToDefault}
-              >
-                Reset Styles and Theme
-              </button>
-
-              <div className="control-group">
-                <label>Theme Presets</label>
-                <div className="theme-presets-grid">
-                  {THEME_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className={`theme-preset-card ${selectedPreset === preset.id ? 'active' : ''}`}
-                      onClick={() => applyThemePreset(preset)}
-                    >
-                      <span className="theme-preset-name">{preset.name}</span>
-                      <div className="theme-preset-preview">
-                        <span
-                          className="theme-preset-swatch"
-                          style={{ backgroundColor: preset.surfaceBg }}
-                          title="Surface"
-                        />
-                        <span
-                          className="theme-preset-swatch"
-                          style={{ backgroundColor: preset.boneBg }}
-                          title="Bone"
-                        />
-                        <span
-                          className="theme-preset-swatch"
-                          style={{ backgroundColor: preset.shimmerHex }}
-                          title="Shimmer"
-                        />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Bone Background: <span className="value">{boneBg}</span>
-                </label>
-                <span className="color-label-pill">--fluid-loading-bone-bg</span>
-                <div className="color-picker-field">
-                  <input
-                    type="color"
-                    className="color-swatch-input"
-                    value={boneBg}
-                    onChange={(e) => {
-                      setSelectedPreset('custom');
-                      setBoneBg(e.target.value);
-                    }}
-                  />
-                  <span className="color-value-text">{boneBg}</span>
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Surface Background: <span className="value">{surfaceBg}</span>
-                </label>
-                <span className="color-label-pill">--fluid-loading-surface-bg</span>
-                <div className="color-picker-field">
-                  <input
-                    type="color"
-                    className="color-swatch-input"
-                    value={surfaceBg}
-                    onChange={(e) => {
-                      setSelectedPreset('custom');
-                      setSurfaceBg(e.target.value);
-                    }}
-                  />
-                  <span className="color-value-text">{surfaceBg}</span>
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Shimmer Accent: <span className="value">{shimmerHex}</span>
-                </label>
-                <span className="color-label-pill">--fluid-loading-shimmer-color</span>
-                <div className="color-picker-field">
-                  <input
-                    type="color"
-                    className="color-swatch-input"
-                    value={shimmerHex}
-                    onChange={(e) => {
-                      setSelectedPreset('custom');
-                      setShimmerHex(e.target.value);
-                    }}
-                  />
-                  <span className="color-value-text">{hexToRgba(shimmerHex, shimmerOpacity)}</span>
-                </div>
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Shimmer Opacity: <span className="value">{shimmerOpacity}%</span>
-                </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="90"
-                  step="5"
-                  value={shimmerOpacity}
-                  onChange={(e) => {
-                    setSelectedPreset('custom');
-                    setShimmerOpacity(Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Shimmer Wave Speed: <span className="value">{shimmerDuration}s</span>
-                </label>
-                <input
-                  type="range"
-                  min="0.6"
-                  max="3.0"
-                  step="0.1"
-                  value={shimmerDuration}
-                  onChange={(e) => {
-                    setSelectedPreset('custom');
-                    setShimmerDuration(Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Container Radius: <span className="value">{containerRadius}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="32"
-                  step="1"
-                  value={containerRadius}
-                  onChange={(e) => {
-                    setSelectedPreset('custom');
-                    setContainerRadius(Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Text Bone Radius: <span className="value">{textRadius}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="20"
-                  step="1"
-                  value={textRadius}
-                  onChange={(e) => {
-                    setSelectedPreset('custom');
-                    setTextRadius(Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="control-group">
-                <label>
-                  Rect Bone Radius: <span className="value">{rectRadius}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="24"
-                  step="1"
-                  value={rectRadius}
-                  onChange={(e) => {
-                    setSelectedPreset('custom');
-                    setRectRadius(Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="css-export-section">
-                <button
-                  type="button"
-                  className="copy-css-btn"
-                  onClick={copyCssVariables}
-                >
-                  {copiedCss ? '✓ Copied to Clipboard!' : 'Copy CSS Variables'}
-                </button>
-                <pre className="css-code-box">
-                  {`:root {
-  --fluid-loading-bone-bg: ${boneBg};
-  --fluid-loading-surface-bg: ${surfaceBg};
-  --fluid-loading-shimmer-color: ${hexToRgba(shimmerHex, shimmerOpacity)};
-  --fluid-loading-shimmer-duration: ${shimmerDuration}s;
-  --fluid-loading-radius: ${containerRadius}px;
-  --fluid-loading-text-radius: ${textRadius}px;
-  --fluid-loading-rect-radius: ${rectRadius}px;
-}`}
-                </pre>
-              </div>
-            </>
-          )}
-        </aside>
-
-        <main className="stage-wrapper">
-          <div className="stage-card">
-            <div className="stage-header">
-              <span className="stage-title">Transition Stage</span>
-              <div className="state-indicators">
-                <span className={`status-badge ${internalState}`}>
-                  {internalState}
-                </span>
-              </div>
             </div>
 
-            <div className="preview-wrapper">
-              <FluidLoading
-                loading={loading}
-                error={isError ? new Error('Simulated network failure') : undefined}
-                estimatedHeight={estimatedHeight}
-                duration={motionMode === 'reduced' ? 0 : duration}
-                revealDuration={motionMode === 'reduced' ? 0 : revealDuration}
-                minimumSkeletonDuration={motionMode === 'reduced' ? 0 : minimumSkeletonDuration}
-                onStateChange={setFluidState}
-                onInternalStateChange={setInternalState}
-                onSnapshot={setLastSnapshot}
-                style={{
-                  ['--fluid-loading-bone-bg' as string]: boneBg,
-                  ['--fluid-loading-surface-bg' as string]: surfaceBg,
-                  ['--fluid-loading-shimmer-color' as string]: hexToRgba(shimmerHex, shimmerOpacity),
-                  ['--fluid-loading-shimmer-duration' as string]: `${shimmerDuration}s`,
-                  ['--fluid-loading-radius' as string]: `${containerRadius}px`,
-                  ['--fluid-loading-text-radius' as string]: `${textRadius}px`,
-                  ['--fluid-loading-rect-radius' as string]: `${rectRadius}px`,
-                }}
-                errorFallback={
-                  <div className="fluid-loading-error-container">
-                    <p>Failed to load data. The container surface remained stable.</p>
-                    <button className="content-card-action" onClick={triggerLoad}>
-                      Retry
+            <div className="workbench-body">
+              <div className="workbench-stage">
+                <div className="stage-action-bar">
+                  <div className="stage-action-bar-left">
+                    <div className="workbench-state-pill">
+                      <span className={`status-indicator-dot ${internalState}`} />
+                      <span className="status-indicator-text">{internalState}</span>
+                    </div>
+                  </div>
+
+                  <div className="stage-action-bar-right">
+                    <button
+                      type="button"
+                      className="workbench-action-btn reload-btn"
+                      onClick={triggerLoad}
+                      title="Trigger loading and transition cycle"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                        <path d="M16 21h5v-5" />
+                      </svg>
+                      <span>Reload</span>
                     </button>
                   </div>
-                }
-              >
-                {renderContent(contentType, variation)}
-              </FluidLoading>
+                </div>
+                <div className="stage-canvas-ambient" />
+                <div className="stage-preview-area">
+                  <FluidLoading
+                    loading={loading}
+                    error={isError ? new Error('Simulated network failure') : undefined}
+                    estimatedHeight={estimatedHeight}
+                    duration={motionMode === 'reduced' ? 0 : duration}
+                    revealDuration={motionMode === 'reduced' ? 0 : revealDuration}
+                    minimumSkeletonDuration={motionMode === 'reduced' ? 0 : minimumSkeletonDuration}
+                    onStateChange={setFluidState}
+                    onInternalStateChange={setInternalState}
+                    onSnapshot={setLastSnapshot}
+                    style={{
+                      ['--fluid-loading-bone-bg' as string]: boneBg,
+                      ['--fluid-loading-surface-bg' as string]: surfaceBg,
+                      ['--fluid-loading-shimmer-color' as string]: hexToRgba(shimmerHex, shimmerOpacity),
+                      ['--fluid-loading-shimmer-duration' as string]: `${shimmerDuration}s`,
+                      ['--fluid-loading-radius' as string]: `${containerRadius}px`,
+                      ['--fluid-loading-text-radius' as string]: `${textRadius}px`,
+                      ['--fluid-loading-rect-radius' as string]: `${rectRadius}px`,
+                    }}
+                    errorFallback={
+                      <div className="fluid-loading-error-container">
+                        <p>Failed to load data. The container surface remained stable.</p>
+                        <button className="content-card-action" onClick={triggerLoad}>
+                          Retry
+                        </button>
+                      </div>
+                    }
+                  >
+                    {renderContent(contentType, variation)}
+                  </FluidLoading>
+                </div>
+              </div>
+
+              <aside className="workbench-inspector">
+                <div className="inspector-tab-bar">
+                  <button
+                    type="button"
+                    className={`inspector-tab-btn ${sidebarTab === 'behavior' ? 'active' : ''}`}
+                    onClick={() => setSidebarTab('behavior')}
+                  >
+                    Timing &amp; Motion
+                  </button>
+                  <button
+                    type="button"
+                    className={`inspector-tab-btn ${sidebarTab === 'styles' ? 'active' : ''}`}
+                    onClick={() => setSidebarTab('styles')}
+                  >
+                    Theme &amp; Tokens
+                  </button>
+                </div>
+
+                <div className="inspector-content">
+                  {sidebarTab === 'behavior' ? (
+                    <>
+                      <div className="inspector-subhead">
+                        <span className="subhead-title">Timing Presets</span>
+                        <button
+                          type="button"
+                          className="inspector-reset-link"
+                          onClick={applyDefaultPreset}
+                          title="Reset timing and layout to defaults"
+                        >
+                          ↺ Reset Timing
+                        </button>
+                      </div>
+
+                      <div className="timing-presets-pill-list">
+                        {TIMING_PRESETS.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            className={`timing-pill-btn ${selectedTimingPreset === preset.id ? 'active' : ''}`}
+                            onClick={() => applyTimingPreset(preset)}
+                            title={`Apply ${preset.name} timing preset`}
+                          >
+                            <span className="timing-pill-icon">{preset.icon}</span>
+                            <span>{preset.name}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Motion Preference <span className="value">{motionMode === 'normal' ? 'Normal' : 'Reduced'}</span>
+                        </label>
+                        <div className="segmented-control">
+                          {(['normal', 'reduced'] as MotionMode[]).map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              className={`segmented-button ${motionMode === m ? 'active' : ''}`}
+                              onClick={() => setMotionMode(m)}
+                            >
+                              {m === 'normal' ? 'Normal Motion' : 'Reduced Motion'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Estimated Height <span className="value">{estimatedHeight}px</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="100"
+                          max="600"
+                          step="10"
+                          value={estimatedHeight}
+                          onChange={(e) => {
+                            setSelectedTimingPreset('custom');
+                            setEstimatedHeight(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Morph Duration <span className="value">{duration}ms</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1500"
+                          step="50"
+                          value={duration}
+                          onChange={(e) => {
+                            setSelectedTimingPreset('custom');
+                            setDuration(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Min Skeleton Delay <span className="value">{minimumSkeletonDuration}ms</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="2000"
+                          step="50"
+                          value={minimumSkeletonDuration}
+                          onChange={(e) => {
+                            setSelectedTimingPreset('custom');
+                            setMinimumSkeletonDuration(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Reveal Duration <span className="value">{revealDuration}ms</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="800"
+                          step="25"
+                          value={revealDuration}
+                          onChange={(e) => {
+                            setSelectedTimingPreset('custom');
+                            setRevealDuration(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Simulated Delay <span className="value">{networkDelay}ms</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="2000"
+                          step="100"
+                          value={networkDelay}
+                          onChange={(e) => {
+                            setSelectedTimingPreset('custom');
+                            setNetworkDelay(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="inspector-subhead">
+                        <span className="subhead-title">Theme Presets</span>
+                        <button
+                          type="button"
+                          className="inspector-reset-link"
+                          onClick={resetStylesToDefault}
+                          title="Reset theme and styles to defaults"
+                        >
+                          ↺ Reset Theme
+                        </button>
+                      </div>
+
+                      <div className="theme-presets-pill-list">
+                        {THEME_PRESETS.map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            className={`theme-pill-btn ${selectedPreset === preset.id ? 'active' : ''}`}
+                            onClick={() => applyThemePreset(preset)}
+                            title={`Apply ${preset.name} preset`}
+                          >
+                            <span
+                              className="theme-pill-swatch"
+                              style={{ backgroundColor: preset.shimmerHex }}
+                            />
+                            <span>{preset.name}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Bone Background <span className="value">{boneBg}</span>
+                        </label>
+                        <div className="color-picker-field">
+                          <input
+                            type="color"
+                            className="color-swatch-input"
+                            value={boneBg}
+                            onChange={(e) => {
+                              setSelectedPreset('custom');
+                              setBoneBg(e.target.value);
+                            }}
+                          />
+                          <span className="color-value-text">{boneBg}</span>
+                        </div>
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Surface Background <span className="value">{surfaceBg}</span>
+                        </label>
+                        <div className="color-picker-field">
+                          <input
+                            type="color"
+                            className="color-swatch-input"
+                            value={surfaceBg}
+                            onChange={(e) => {
+                              setSelectedPreset('custom');
+                              setSurfaceBg(e.target.value);
+                            }}
+                          />
+                          <span className="color-value-text">{surfaceBg}</span>
+                        </div>
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Shimmer Accent <span className="value">{shimmerHex}</span>
+                        </label>
+                        <div className="color-picker-field">
+                          <input
+                            type="color"
+                            className="color-swatch-input"
+                            value={shimmerHex}
+                            onChange={(e) => {
+                              setSelectedPreset('custom');
+                              setShimmerHex(e.target.value);
+                            }}
+                          />
+                          <span className="color-value-text">{hexToRgba(shimmerHex, shimmerOpacity)}</span>
+                        </div>
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Shimmer Opacity <span className="value">{shimmerOpacity}%</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="5"
+                          max="90"
+                          step="5"
+                          value={shimmerOpacity}
+                          onChange={(e) => {
+                            setSelectedPreset('custom');
+                            setShimmerOpacity(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Shimmer Wave Speed <span className="value">{shimmerDuration}s</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0.6"
+                          max="3.0"
+                          step="0.1"
+                          value={shimmerDuration}
+                          onChange={(e) => {
+                            setSelectedPreset('custom');
+                            setShimmerDuration(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Container Radius <span className="value">{containerRadius}px</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="32"
+                          step="1"
+                          value={containerRadius}
+                          onChange={(e) => {
+                            setSelectedPreset('custom');
+                            setContainerRadius(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Text Bone Radius <span className="value">{textRadius}px</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="20"
+                          step="1"
+                          value={textRadius}
+                          onChange={(e) => {
+                            setSelectedPreset('custom');
+                            setTextRadius(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+
+                      <div className="control-group">
+                        <label>
+                          Rect Bone Radius <span className="value">{rectRadius}px</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="24"
+                          step="1"
+                          value={rectRadius}
+                          onChange={(e) => {
+                            setSelectedPreset('custom');
+                            setRectRadius(Number(e.target.value));
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </aside>
+            </div>
+
+            <div className="workbench-export">
+              <div className="workbench-export-header">
+                <div className="workbench-control-field">
+                  <span className="workbench-field-label">Export:</span>
+                  <div className="segmented-control compact">
+                    <button
+                      type="button"
+                      className={`segmented-button ${exportTab === 'css' ? 'active' : ''}`}
+                      onClick={() => setExportTab('css')}
+                    >
+                      CSS Variables
+                    </button>
+                    <button
+                      type="button"
+                      className={`segmented-button ${exportTab === 'react' ? 'active' : ''}`}
+                      onClick={() => setExportTab('react')}
+                    >
+                      React Component
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="workbench-copy-btn"
+                  onClick={copyActiveCode}
+                  title="Copy snippet to clipboard"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span>{copiedCode ? 'Copied!' : (exportTab === 'css' ? 'Copy Variables' : 'Copy Component')}</span>
+                </button>
+              </div>
+
+              <pre className="workbench-code-box">{exportTab === 'css' ? getCssVariablesCode() : getReactUsageCode()}</pre>
             </div>
           </div>
-        </main>
-        </div>
         </section>
 
         <section id="features" className="features-section">
           <div className="section-header">
-            <span className="section-tag">Capabilities</span>
+            <span className="section-tag">Features</span>
             <h2 className="section-title">Architecture &amp; Real-time Verification</h2>
             <p className="section-desc">
               Inspect generated structural bone primitives, run in-browser layout benchmarks, and verify 0.00 CLS.
@@ -835,13 +1013,13 @@ export function UserCard({ user, loading, error }) {
           <div className="bento-grid">
             <div className="bento-card">
               <div className="bento-card-header">
-                <div className="bento-card-title-group">
+                <div className="bento-card-top-row">
                   <span className="bento-tag">Inspection</span>
-                  <h2>Precise Skeleton Bones Detected</h2>
+                  {lastSnapshot && (
+                    <span className="bento-count-badge">{lastSnapshot.bones.length} bones</span>
+                  )}
                 </div>
-                {lastSnapshot && (
-                  <span className="bento-count-badge">{lastSnapshot.bones.length} bones</span>
-                )}
+                <h2>Precise Skeleton Bones Detected</h2>
               </div>
               {lastSnapshot && lastSnapshot.bones.length > 0 ? (
                 <>
@@ -868,17 +1046,17 @@ export function UserCard({ user, loading, error }) {
 
             <div id="benchmark" className="bento-card">
               <div className="bento-card-header">
-                <div className="bento-card-title-group">
+                <div className="bento-card-top-row">
                   <span className="bento-tag">Performance</span>
-                  <h2>DOM Scalability Benchmark</h2>
+                  <button
+                    className="content-card-action bento-action-button"
+                    onClick={runBenchmark}
+                    disabled={isBenchmarking}
+                  >
+                    {isBenchmarking ? 'Running...' : 'Run Benchmark'}
+                  </button>
                 </div>
-                <button
-                  className="content-card-action bento-action-button"
-                  onClick={runBenchmark}
-                  disabled={isBenchmarking}
-                >
-                  {isBenchmarking ? 'Running...' : 'Run Benchmark'}
-                </button>
+                <h2>DOM Scalability Benchmark</h2>
               </div>
               <p className="bento-subtitle">
                 Recursive element scanning, snapshot serialization, and skeleton generation.
@@ -961,7 +1139,7 @@ export function UserCard({ user, loading, error }) {
                 className="copy-css-btn"
                 onClick={copyQuickstartCode}
               >
-                {copiedQuickstart ? '✓ Copied!' : 'Copy Code'}
+                {copiedQuickstart ? 'Copied!' : 'Copy Code'}
               </button>
             </div>
             <pre className="quickstart-pre">{QUICKSTART_CODE}</pre>
@@ -979,7 +1157,7 @@ export function UserCard({ user, loading, error }) {
             A layout-aware skeleton and transition engine for React and the DOM.
           </p>
           <div className="footer-links">
-            <a href="#demo" className="footer-link">Playground</a>
+            <a href="#playground" className="footer-link">Playground</a>
             <a href="#features" className="footer-link">Features</a>
             <a href="#quickstart" className="footer-link">Quick Start</a>
             <a
