@@ -7,13 +7,13 @@
 
 ## Overview
 
-`@fluid-loading/react` eliminates Cumulative Layout Shift (CLS) during asynchronous UI loading. Instead of harsh pop-ins or jarring content replacements, `<FluidLoading>` captures in-flight DOM geometries and executes GPU-accelerated FLIP morph transitions from placeholder skeleton bones directly to real hydrated content.
+`@fluid-loading/react` eliminates Cumulative Layout Shift (CLS) during asynchronous UI loading. Instead of harsh pop-ins or inaccurate skeleton boxes, `<FluidLoading>` measures the real DOM layout of your child components in-flight, smoothly interpolates container dimensions, overlays matching skeleton bones, and seamlessly reveals the hydrated content.
 
-- **Zero CLS (0.00)**: Eliminates visual jumps during data hydration.
-- **Ultra-lightweight**: Under 1ms measurement overhead, zero heavy animation dependencies.
-- **Styles automatically bundled**: No separate CSS import required when using standard bundlers.
-- **Full Customization**: Configure via strongly-typed React props or `--fluid-*` CSS variables.
-- **Accessible & Compliant**: Respects `prefers-reduced-motion` automatically.
+- **Zero CLS (0.00)**: Eliminates layout shifts during asynchronous data loading.
+- **Ultra-lightweight**: In-flight DOM scanner with `< 1ms` overhead, zero heavy animation dependencies.
+- **Zero-Config Styles**: Component styles are bundled directly into `@fluid-loading/react` with zero required CSS imports.
+- **Dual-Mode Customization**: Configure via strongly-typed React props or standard `--fluid-loading-*` CSS tokens.
+- **Accessible & Compliant**: Built-in `aria-busy`, `aria-hidden` on skeletons, and automatic `prefers-reduced-motion` compliance.
 
 ## Installation
 
@@ -25,9 +25,11 @@ pnpm add @fluid-loading/react
 yarn add @fluid-loading/react
 ```
 
-> **Note**: Peer dependency is `react` and `react-dom` >= 18.0.0.
+> **Note**: Peer dependencies are `react` and `react-dom` (>= 18.0.0, including React 19).
 
 ## Quick Start
+
+Import `FluidLoading` and wrap your dynamic content. Styles are injected automatically:
 
 ```tsx
 import { useState } from 'react';
@@ -40,64 +42,98 @@ export function UserProfile() {
   return (
     <FluidLoading
       loading={loading}
-      pattern="card"
-      estimatedHeight={240}
+      estimatedHeight={260}
       duration={350}
       revealDuration={200}
     >
-      <div className="profile-card">
-        <img src={user?.avatar} alt={user?.name} className="avatar" />
+      <article className="profile-card">
+        <img
+          src={user?.avatar}
+          alt={user?.name}
+          className="avatar"
+          data-fluid-loading-type="circle"
+        />
         <h2>{user?.name}</h2>
         <p>{user?.bio}</p>
-      </div>
+        <button type="button" data-fluid-loading-ignore>Follow</button>
+      </article>
     </FluidLoading>
   );
 }
 ```
 
+---
+
 ## Component Props
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `loading` | `boolean` | `true` | Controls whether skeleton placeholder or real content is displayed |
-| `pattern` | `'card' \| 'text' \| 'avatar' \| 'table' \| 'media' \| 'feed'` | `'card'` | Structural skeleton preset layout |
-| `boneCount` | `number` | `3` | Number of placeholder bone lines or elements |
-| `estimatedHeight` | `number` | `undefined` | Reserved height (px) prior to first measurement |
-| `duration` | `number` | `350` | Morph animation duration in milliseconds |
-| `revealDuration` | `number` | `200` | Crossfade duration in milliseconds |
-| `minimumSkeletonDuration` | `number` | `150` | Minimum time (ms) skeleton remains to prevent fast-network flashes |
-| `easing` | `string` | `'cubic-bezier(0.16, 1, 0.3, 1)'` | CSS transition timing function |
-| `stagger` | `number \| string` | `30` | Cascading bone morph stagger (ms or CSS value) |
-| `radius` | `number \| string` | `8` | Bone border radius (px or CSS string) |
-| `shimmer` | `boolean` | `true` | Enables animated highlight shimmer over skeleton bones |
-| `shimmerDuration` | `number \| string` | `'1.5s'` | Shimmer cycle interval |
-| `skeletonBg` | `string` | `'#1e2028'` | Skeleton bone base background color |
-| `shimmerColor` | `string` | `'rgba(255, 255, 255, 0.06)'` | Shimmer highlight gradient color |
-| `shimmerAngle` | `number` | `90` | Angle in degrees for the shimmer sweep |
-| `as` | `ElementType` | `'div'` | Custom wrapper HTML tag or React component |
-| `skeleton` | `ReactNode` | `undefined` | Custom skeleton DOM node to override automatic bone generator |
-| `onTransitionStart` | `() => void` | `undefined` | Callback fired when the FLIP morph begins |
-| `onTransitionEnd` | `() => void` | `undefined` | Callback fired when real content is fully revealed |
+| `loading` | `boolean` | **Required** | Controls loading and transition cycle. |
+| `error` | `unknown` | `undefined` | Error state. Preserves container dimensions to prevent collapse. |
+| `estimatedHeight` | `number` | `240` | Initial estimated height in pixels during loading. |
+| `estimatedWidth` | `number \| string` | `'100%'` | Initial estimated container width. |
+| `duration` | `number` | `300` | Container morph duration in ms (maps to `--fluid-loading-duration`). |
+| `revealDuration` | `number` | `150` | Content reveal duration in ms (maps to `--fluid-loading-reveal-duration`). |
+| `minimumSkeletonDuration` | `number` | `120` | Minimum skeleton hold time in ms (maps to `--fluid-loading-minimum-skeleton-duration`). |
+| `boneBg` | `string` | `undefined` | Background color for skeleton bones (maps to `--fluid-loading-bone-bg`). |
+| `surfaceBg` | `string` | `undefined` | Container background color during skeleton phase (maps to `--fluid-loading-surface-bg`). |
+| `shimmerColor` | `string` | `undefined` | Highlight wave gradient color (maps to `--fluid-loading-shimmer-color`). |
+| `shimmerDuration` | `number \| string` | `undefined` | Shimmer wave animation cycle speed (maps to `--fluid-loading-shimmer-duration`). |
+| `radius` | `number \| string` | `undefined` | Border radius of container surface (maps to `--fluid-loading-radius`). |
+| `textRadius` | `number \| string` | `undefined` | Border radius for text bones (maps to `--fluid-loading-text-radius`). |
+| `rectRadius` | `number \| string` | `undefined` | Border radius for rectangular bones (maps to `--fluid-loading-rect-radius`). |
+| `fallback` | `ReactNode` | `undefined` | Custom placeholder shown during initial estimated loading. |
+| `errorFallback` | `ReactNode \| ((props: { error: unknown }) => ReactNode)` | Default UI | Custom component or render function for error states. |
+| `className` | `string` | `''` | Class name applied to root container. |
+| `style` | `CSSProperties` | `undefined` | Inline styles applied to root container. |
+| `onStateChange` | `(state: FluidLoadingState) => void` | `undefined` | Emits public state changes (`loading`, `transitioning`, `ready`, `error`). |
+| `onInternalStateChange` | `(state: InternalState) => void` | `undefined` | Emits internal lifecycle states (`loading`, `measuring`, `morphing`, `precise-skeleton`, `revealing`, `ready`, `error`). |
+| `onSnapshot` | `(snapshot: LayoutSnapshot) => void` | `undefined` | Emits measured geometry bones and dimensions. |
 
-## CSS Custom Properties
+---
+
+## HTML Control Attributes
+
+Use HTML attributes on target child nodes to fine-tune automatic skeleton detection:
+
+- `data-fluid-loading-ignore`: Excludes the element from skeleton calculation.
+- `data-fluid-loading-type="text | rect | circle"`: Explicitly forces bone rendering geometry.
+
+```html
+<div class="user-avatar" data-fluid-loading-type="circle"></div>
+<button data-fluid-loading-ignore>Dismiss</button>
+```
+
+---
+
+## CSS Custom Properties Reference
 
 All styling and timing values can also be customized directly through CSS variables at `:root` or on parent containers:
 
 ```css
-.my-card-container {
-  --fluid-duration: 400ms;
-  --fluid-reveal-duration: 250ms;
-  --fluid-min-duration: 200ms;
-  --fluid-easing: cubic-bezier(0.25, 1, 0.5, 1);
-  --fluid-radius: 12px;
-  --fluid-skeleton-bg: #14171f;
-  --fluid-shimmer-color: rgba(99, 102, 241, 0.15);
+:root {
+  --fluid-loading-duration: 350ms;
+  --fluid-loading-reveal-duration: 200ms;
+  --fluid-loading-minimum-skeleton-duration: 250ms;
+  --fluid-loading-shimmer-duration: 1.5s;
+  --fluid-loading-radius: 14px;
+  --fluid-loading-text-radius: 5px;
+  --fluid-loading-rect-radius: 8px;
+  --fluid-loading-surface-bg: #1c202b;
+  --fluid-loading-bone-bg: #353d4f;
+  --fluid-loading-shimmer-color: rgba(251, 191, 36, 0.25);
 }
 ```
 
+When timing props (`duration`, `revealDuration`, `minimumSkeletonDuration`) are omitted from JSX, `<FluidLoading>` automatically resolves them from the active CSS variables.
+
+---
+
 ## Accessibility (Reduced Motion)
 
-When `prefers-reduced-motion: reduce` is active on the user's operating system, `<FluidLoading>` automatically bypasses transform morphs and executes an instant clean fade transition without motion sickness risks.
+When `prefers-reduced-motion: reduce` is active on the user's operating system, `<FluidLoading>` automatically bypasses transitions and immediately displays content without animation delays.
+
+---
 
 ## License
 
