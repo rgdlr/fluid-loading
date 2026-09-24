@@ -1,6 +1,6 @@
 # @fluid-loading/core
 
-> Framework-agnostic core layout measurement and skeleton transition engine for Fluid Loading. Zero Cumulative Layout Shift (CLS 0.00).
+> Framework-agnostic DOM geometry scanner, state machine, and skeleton layout engine for Fluid Loading. Zero Cumulative Layout Shift (CLS 0.00).
 
 [![npm version](https://img.shields.io/npm/v/@fluid-loading/core.svg)](https://www.npmjs.com/package/@fluid-loading/core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -8,13 +8,12 @@
 ## Overview
 
 `@fluid-loading/core` is the mathematical and structural engine powering Fluid Loading. It provides:
-- Exact in-flight DOM layout geometry measurement before content renders.
-- FLIP-based hardware-accelerated morph transitions from skeleton bones directly to real DOM elements.
-- Deterministic finite state machine lifecycle (`IDLE` -> `LOADING` -> `TRANSITIONING` -> `REVEALING` -> `IDLE`).
-- Dynamic bone pattern generator (`card`, `text`, `avatar`, `table`, `feed`, etc.).
-- Complete CSS token design system with automatic `prefers-reduced-motion` compliance.
+- **In-flight DOM Layout Scanner**: Off-screen layout measurement (`< 1ms`) that extracts bounding boxes, leaf media, and text nodes into structural skeleton bones.
+- **Deterministic State Machine**: Lifecycle coordinator transitioning between `loading` -> `measuring` -> `morphing` -> `precise-skeleton` -> `revealing` -> `ready` (or `error`).
+- **CSS Design Tokens**: Complete custom property design system (`--fluid-loading-*`) with automatic `@media (prefers-reduced-motion: reduce)` compliance.
+- **Zero Dependencies**: Lightweight, tree-shakeable, and framework-agnostic.
 
-If you are using React, consider using the official adapter [`@fluid-loading/react`](https://www.npmjs.com/package/@fluid-loading/react).
+If you are using React, use the official adapter [`@fluid-loading/react`](https://www.npmjs.com/package/@fluid-loading/react).
 
 ## Installation
 
@@ -40,93 +39,145 @@ Or reference it in your HTML:
 <link rel="stylesheet" href="node_modules/@fluid-loading/core/dist/styles.css">
 ```
 
+---
+
 ## Core API
+
+### `measureElement(root, options?)`
+
+Scans an element and its children to compute a `LayoutSnapshot`. Automatically detects circular elements (avatars, icons), rectangular elements (cards, images, videos), and text lines:
+
+```ts
+import { measureElement } from '@fluid-loading/core';
+
+const snapshot = measureElement(contentElement, {
+  ignoreAttribute: 'data-fluid-loading-ignore',
+  typeAttribute: 'data-fluid-loading-type',
+  minDimension: 2,
+});
+
+console.log(`Measured bounds: ${snapshot.width}x${snapshot.height}`);
+console.log(`Extracted bones:`, snapshot.bones);
+// [
+//   { type: 'rect', x: 0, y: 0, width: 320, height: 160, borderRadius: 8 },
+//   { type: 'circle', x: 16, y: 176, width: 48, height: 48, borderRadius: 24 },
+//   { type: 'text', x: 74, y: 184, width: 180, height: 18, borderRadius: 5 }
+// ]
+```
+
+### HTML Control Attributes
+
+Use HTML attributes on target child nodes to fine-tune automatic skeleton detection:
+
+- `data-fluid-loading-ignore`: Excludes the element from skeleton calculation.
+- `data-fluid-loading-type="text | rect | circle"`: Explicitly forces bone rendering geometry.
+
+```html
+<div class="user-avatar" data-fluid-loading-type="circle"></div>
+<button data-fluid-loading-ignore>Dismiss</button>
+```
 
 ### `FluidLoadingStateMachine`
 
 Controls the deterministic transition lifecycle:
 
 ```ts
-import { FluidLoadingStateMachine } from '@fluid-loading/core';
+import { FluidLoadingStateMachine, toPublicState } from '@fluid-loading/core';
 
-const sm = new FluidLoadingStateMachine({
-  timing: {
+const sm = new FluidLoadingStateMachine('loading');
+
+// Subscribe to state changes
+const unsubscribe = sm.subscribe((newState, prevState, error) => {
+  console.log(`State: ${prevState} -> ${newState}`);
+  console.log(`Public state: ${toPublicState(newState)}`);
+});
+
+// Transition between internal states
+sm.transition('measuring');
+sm.transition('morphing');
+sm.transition('precise-skeleton');
+sm.transition('revealing');
+sm.transition('ready');
+
+// In case of error
+sm.setError(new Error('Network request failed'));
+
+// Query current state
+console.log(sm.getState()); // 'error'
+console.log(sm.getPublicState()); // 'error'
+
+// Reset back to initial loading state
+sm.reset();
+
+// Cleanup listener
+unsubscribe();
+```
+
+#### Lifecycle States
+
+- **Internal States**: `'loading'` | `'measuring'` | `'morphing'` | `'precise-skeleton'` | `'revealing'` | `'ready'` | `'error'`
+- **Public States**: `'loading'` | `'transitioning'` | `'ready'` | `'error'`
+
+### `resolveTiming(timing, reducedMotion?)`
+
+Resolves timing configurations with fallback defaults and handles `prefers-reduced-motion`:
+
+```ts
+import { resolveTiming } from '@fluid-loading/core';
+
+const timing = resolveTiming(
+  {
     duration: 350,
-    easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
     revealDuration: 200,
-    minimumSkeletonDuration: 150
+    minimumSkeletonDuration: 150,
   },
-  onStateChange: (state, prevState) => {
-    console.log(`State transitioned: ${prevState} -> ${state}`);
-  }
-});
-
-// Start loading
-sm.startLoading();
-
-// Signal data ready
-sm.contentLoaded();
+  false // reducedMotion
+);
+// { duration: 350, revealDuration: 200, minimumSkeletonDuration: 150 }
 ```
 
-### `measureElement` & `measureHiddenContent`
+When `reducedMotion` is `true`, all durations are automatically collapsed to `0` for instantaneous accessible transitions.
 
-Measures incoming target element bounding boxes without causing visible layout jumps or reflow thrashing:
+### Snapshot Utilities
 
 ```ts
-import { measureElement } from '@fluid-loading/core';
+import {
+  calculateLayoutDiff,
+  createSnapshot,
+  deserializeSnapshot,
+  serializeSnapshot,
+} from '@fluid-loading/core';
 
-const metrics = measureElement(contentNode);
-console.log(metrics.width, metrics.height);
+// Create a custom snapshot
+const snapshot = createSnapshot(400, 300, bones);
+
+// Serialize to JSON and deserialize back
+const json = serializeSnapshot(snapshot);
+const restored = deserializeSnapshot(json);
+
+// Calculate layout shift difference between two snapshots
+const diff = calculateLayoutDiff(snapshotA, snapshotB);
+console.log(`Shift: ${diff.deltaWidth}px width, ${diff.deltaHeight}px height`);
 ```
 
-### `generateSkeletonBones` & `createSkeletonElement`
+---
 
-Generates matching geometric bones based on pattern or measured dimensions:
+## CSS Custom Properties Reference
 
-```ts
-import { generateSkeletonBones, createSkeletonElement } from '@fluid-loading/core';
+| Variable | Default (Dark) | Default (Light) | Description |
+| :--- | :--- | :--- | :--- |
+| `--fluid-loading-duration` | `300ms` | `300ms` | Container dimension morph animation duration |
+| `--fluid-loading-reveal-duration` | `150ms` | `150ms` | Fade transition duration between skeleton and content |
+| `--fluid-loading-minimum-skeleton-duration` | `120ms` | `120ms` | Minimum skeleton hold time to prevent sub-frame flashes |
+| `--fluid-loading-bone-bg` | `#353d4f` | `#cbd5e1` | Background color for skeleton bones |
+| `--fluid-loading-surface-bg` | `#1c202b` | `#ffffff` | Background color for skeleton overlay |
+| `--fluid-loading-shimmer-color` | `rgba(251, 191, 36, 0.16)` | `rgba(251, 191, 36, 0.25)` | Wave highlight color |
+| `--fluid-loading-shimmer-duration` | `1.5s` | `1.5s` | Wave animation cycle duration |
+| `--fluid-loading-radius` | `12px` | `12px` | Border radius of container & error state |
+| `--fluid-loading-text-radius` | `5px` | `5px` | Border radius for text bones |
+| `--fluid-loading-rect-radius` | `8px` | `8px` | Border radius for rectangle bones |
 
-const bones = generateSkeletonBones({
-  pattern: 'card',
-  boneCount: 4,
-  estimatedHeight: 280
-});
-
-const skeletonDom = createSkeletonElement({
-  bones,
-  shimmer: true
-});
-container.appendChild(skeletonDom);
-```
-
-### `createFLIPTransition`
-
-Executes FLIP (First, Last, Invert, Play) transforms using Web Animations API:
-
-```ts
-import { createFLIPTransition } from '@fluid-loading/core';
-
-await createFLIPTransition({
-  from: skeletonSnapshot,
-  to: contentSnapshot,
-  element: containerElement,
-  timing: { duration: 350, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-});
-```
-
-## CSS Custom Properties
-
-| Variable | Default | Description |
-| :--- | :--- | :--- |
-| `--fluid-duration` | `350ms` | Morph transition duration |
-| `--fluid-reveal-duration` | `200ms` | Content crossfade duration |
-| `--fluid-min-duration` | `150ms` | Minimum skeleton display duration |
-| `--fluid-easing` | `cubic-bezier(0.16, 1, 0.3, 1)` | Animation timing function |
-| `--fluid-stagger` | `30ms` | Cascading bone delay |
-| `--fluid-radius` | `8px` | Skeleton bone border radius |
-| `--fluid-shimmer-duration`| `1.5s` | Shimmer cycle interval |
-| `--fluid-skeleton-bg` | `#1e2028` | Base bone background color |
-| `--fluid-shimmer-color` | `rgba(255, 255, 255, 0.06)` | Gradient shimmer highlight |
+---
 
 ## License
 
